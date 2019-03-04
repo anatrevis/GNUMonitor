@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+{% extends "gnumonitor/base.html" %}
+{% block body_block %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <!-- <script type="text/javascript" src="static/js/mycharts.js"></script> -->
+    <title>Monitor</title>
+  </head>
+  <body>
+
+    <div id="chart" style="width:100%; height:400px;"></div>
+
+    <script type="text/javascript">
+      Highcharts.chart('chart', {
+          chart: {
+              type: 'line'
+          },
+
+          credits: {
+            enabled: false
+          },
+
+          title: {
+              text: 'Monitor Data'
+          },
+
+          yAxis: {
+            title: {
+                text: 'Throughput'
+            }
+          },
+
+          xAxis: {
+            categories: [{% for data in monidata %}'{{ data.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
+            title: {
+               text: 'Time'
+             },
+          },
+
+          plotOptions: {
+            line: {
+                dataLabels: {
+                    enabled: true
+                },
+                enableMouseTracking: false
+            }
+          },
+
+          series: [{
+            name: 'Throughput',
+            data: [
+              {% for data in monidata %}{{ data.throughput  }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            ],
+
+        }]
+      });
+    </script>
+
+  </body>
+{% endblock %}
+</html>

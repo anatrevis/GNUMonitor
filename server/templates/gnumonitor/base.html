@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href={% static "css/mystyle.css" %}>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.0/css/bootstrap.min.css" integrity="sha384-PDle/QlgIONtM1aqA2Qemk5gPOE7wFq8+Em+G/hmo5Iq0CCmYZLv3fVRDJ4MMwEA" crossorigin="anonymous">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'index' %}">Monitor</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'datalist' %}">Data list</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+    <div class="container">
+      {% block body_block %}
+      <!-- Anything outside of this will be inherited if you extend! -->
+      {% endblock %}
+
+    </div>
+
+  </body>
+</html>

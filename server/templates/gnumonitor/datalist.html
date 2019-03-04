@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+{% extends "gnumonitor/base.html" %}
+{% block body_block %}
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <h1>Monitored data:</h1>
+    {% if datalist %}
+
+    <ol>
+      {% for data in datalist %}
+      <li>Data Info</li>
+        <ul>
+            <li>Time: {{ data.time }} </li>
+            <li>Throughput: {{ data.throughput }} </li>
+        </ul>
+      {% endfor %}
+    </ol>
+
+  {% endif %}
+  <!-- <div id="container"></div>
+  <script>
+    Highcharts.chart('container', {
+        chart: {
+            type: 'line'
+        },
+
+        credits: {
+          enabled: false
+        },
+
+        title: {
+            text: 'Monitor Data'
+        },
+
+        yAxis: {
+          title: {
+              text: 'Throughput'
+          }
+        },
+
+        xAxis: {
+          categories: [{% for data in datalist %}'{{ data.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
+          title: {
+             text: 'Time'
+           },
+        },
+
+        plotOptions: {
+          line: {
+              dataLabels: {
+                  enabled: true
+              },
+              enableMouseTracking: false
+          }
+        },
+
+        series: [{
+          name: 'Throughput',
+          data: [
+            {% for data in datalist %}{{ data.throughput  }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          ],
+
+      }]
+    });
+  </script> -->
+  </body>
+{% endblock %}
+</html>
