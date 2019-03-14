@@ -1,62 +1,164 @@
 <!DOCTYPE html>
 {% extends "gnumonitor/base.html" %}
+{% load staticfiles %}
 {% block body_block %}
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <!-- <script type="text/javascript" src="static/js/mycharts.js"></script> -->
+    <!-- <script src="{% static "js/dash.js" %}"></script> -->
+    <!-- <script type="text/javascript" src="static/js/dash.js"></script> -->
     <title>Monitor</title>
   </head>
   <body>
+    <div class="container">
+      <!-- Button trigger modal -->
+      <button id="add_monitoring" type="button" class="btn btn-light" data-toggle="modal" data-target="#myModal">
+        Add Monitoring
+      </button>
 
-    <div id="chart" style="width:100%; height:400px;"></div>
+      <!-- Modal -->
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Start Monitoring</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              ...
+            </div>
+            <div class="modal-footer">
+              <!-- <button type="button" class="btn btn-light" data-dismiss="modal">Close</button> -->
+              <button type="button" class="btn btn-light">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div id="chart" style="width:100%; height:400px;"></div>
+
+        <div id="menu-dropdown" class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true">
+                Options
+                </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <button id=#5points class="dropdown-item" type="button"><a class="dropdown_link" id="5points" style="text-decoration:none"> 5 points </a></button>
+                <button id=#10points class="dropdown-item" type="button"><a class="dropdown_link" id="10points" style="text-decoration:none"> 10 points </a></button>
+                <button id=#20points class="dropdown-item" type="button"><a class="dropdown_link" id="20points" style="text-decoration:none"> 20 points </a></button>
+            </div>
+        </div>
+      </div>
+
+
+    </div>
 
     <script type="text/javascript">
-      Highcharts.chart('chart', {
-          chart: {
-              type: 'line'
-          },
+    var chart_remove_control = false;
 
-          credits: {
-            enabled: false
-          },
 
-          title: {
-              text: 'Monitor Data'
-          },
+      $(function mychart() {
+        var chart1 = Highcharts.chart('chart', {
+            chart: {
+                type: 'line'
+            },
 
-          yAxis: {
+            credits: {
+              enabled: false
+            },
+
             title: {
-                text: 'Throughput'
+                text: 'Monitor Data'
+            },
+
+            yAxis: {
+              title: {
+                  text: 'Throughput'
+              }
+            },
+
+            xAxis: {
+              // type:'datetime',
+              // dateTimeLabelFormats: {
+              //   day: '%e of %b'
+              // },
+              categories: [{% for data in monidata %}'{{ data.time.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
+              title: {
+                 text: 'Time'
+               },
+            },
+
+            plotOptions: {
+              line: {
+                  // dataLabels: {
+                  //     enabled: true
+                  // },
+                  enableMouseTracking: true
+              }
+            },
+
+            series: [{
+              name: 'Throughput',
+              data: [
+                {% for data in monidata %}{{ data.throughput  }}{% if not forloop.last %}, {% endif %}{% endfor %}
+              ],
+
+          }]
+
+        });
+
+        var cont = chart1.series[0].data.length;
+
+        function print_chart_data(){
+          for (var i=0; i<chart1.series[0].data.length; i++){
+            console.log(chart1.series[0].data[i]['y']);
+          }
+        };
+
+        $( "#5points" ).click(function() {
+            print_chart_data();
+            console.log(cont);
+            if (cont > 5){
+              cont = 5;
+              clearChartlData(cont);
             }
-          },
+        });
 
-          xAxis: {
-            categories: [{% for data in monidata %}'{{ data.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
-            title: {
-               text: 'Time'
-             },
-          },
-
-          plotOptions: {
-            line: {
-                dataLabels: {
-                    enabled: true
-                },
-                enableMouseTracking: false
+        $( "#10points" ).click(function() {
+            print_chart_data();
+            console.log(cont);
+            if (cont > 10){
+              cont = 10;
+              clearChartlData(cont);
             }
-          },
+        });
 
-          series: [{
-            name: 'Throughput',
-            data: [
-              {% for data in monidata %}{{ data.throughput  }}{% if not forloop.last %}, {% endif %}{% endfor %}
-            ],
+        $( "#20points" ).click(function() {
+            print_chart_data();
+            console.log(cont);
+            if (cont > 20){
+              cont = 20;
+              clearChartlData(cont);
+            }
+        });
 
-        }]
-      });
+        function clearChartlData(cont){
+          console.log("clearing chart data!");
+          while(chart1.series[0].data.length > cont){
+            console.log("clearing");
+            chart1.series[0].data[0].remove();
+          }
+          print_chart_data();
+          console.log("ready!");
+        };
+
+        });
+
     </script>
 
   </body>
+<script src="{% static 'js/dash.js' %}"></script>
 {% endblock %}
 </html>
