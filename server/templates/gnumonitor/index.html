@@ -5,8 +5,6 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <!-- <script src="{% static "js/dash.js" %}"></script> -->
-    <!-- <script type="text/javascript" src="static/js/dash.js"></script> -->
     <title>Monitor</title>
   </head>
   <body>
@@ -38,8 +36,7 @@
       </div>
 
       <div class="container">
-        <div id="chart" style="width:100%; height:400px;"></div>
-
+        <div id="chart1" style="width:100%; height:400px;"></div>
         <div id="menu-dropdown" class="dropdown">
                 <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true">
                 Options
@@ -52,113 +49,10 @@
         </div>
       </div>
 
-
     </div>
 
-    <script type="text/javascript">
-    var chart_remove_control = false;
-
-
-      $(function mychart() {
-        var chart1 = Highcharts.chart('chart', {
-            chart: {
-                type: 'line'
-            },
-
-            credits: {
-              enabled: false
-            },
-
-            title: {
-                text: 'Monitor Data'
-            },
-
-            yAxis: {
-              title: {
-                  text: 'Throughput'
-              }
-            },
-
-            xAxis: {
-              // type:'datetime',
-              // dateTimeLabelFormats: {
-              //   day: '%e of %b'
-              // },
-              categories: [{% for data in monidata %}'{{ data.time.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
-              title: {
-                 text: 'Time'
-               },
-            },
-
-            plotOptions: {
-              line: {
-                  // dataLabels: {
-                  //     enabled: true
-                  // },
-                  enableMouseTracking: true
-              }
-            },
-
-            series: [{
-              name: 'Throughput',
-              data: [
-                {% for data in monidata %}{{ data.throughput  }}{% if not forloop.last %}, {% endif %}{% endfor %}
-              ],
-
-          }]
-
-        });
-
-        var cont = chart1.series[0].data.length;
-
-        function print_chart_data(){
-          for (var i=0; i<chart1.series[0].data.length; i++){
-            console.log(chart1.series[0].data[i]['y']);
-          }
-        };
-
-        $( "#5points" ).click(function() {
-            print_chart_data();
-            console.log(cont);
-            if (cont > 5){
-              cont = 5;
-              clearChartlData(cont);
-            }
-        });
-
-        $( "#10points" ).click(function() {
-            print_chart_data();
-            console.log(cont);
-            if (cont > 10){
-              cont = 10;
-              clearChartlData(cont);
-            }
-        });
-
-        $( "#20points" ).click(function() {
-            print_chart_data();
-            console.log(cont);
-            if (cont > 20){
-              cont = 20;
-              clearChartlData(cont);
-            }
-        });
-
-        function clearChartlData(cont){
-          console.log("clearing chart data!");
-          while(chart1.series[0].data.length > cont){
-            console.log("clearing");
-            chart1.series[0].data[0].remove();
-          }
-          print_chart_data();
-          console.log("ready!");
-        };
-
-        });
-
-    </script>
-
   </body>
+<script src="{% static 'js/charts.js' %}"></script>
 <script src="{% static 'js/dash.js' %}"></script>
 {% endblock %}
 </html>

@@ -14,3 +14,10 @@ def datalist(request):
     return render(request, "gnumonitor/datalist.html", context=data_dict)
 
 # Create your views here.
+
+def hello(request):
+    return HttpResponse('Hello World!')
+
+def ajax_test(request):
+    variable = {'variable': 'world'}
+    return render(request, 'gnumonitor/ajax_test.html', context = variable )

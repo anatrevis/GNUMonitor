@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% extends "gnumonitor/base.html" %}
+{% load staticfiles %}
+{% block body_block %}
+
+<h1>Hello {{ variable }}, welcome to my awesome site</h1>
+
+<script type="text/javascript">
+
+function requestData() {
+
+    $.ajax({
+        url: '/gnumonitor/hello',
+        type: 'get',
+        success: function(data) {
+            console.log("hello")
+            alert(data);
+        },
+        failure: function(data) {
+            console.log("hello")
+            alert('Got an error dude');
+        }
+    });
+  }
+
+  requestData()
+</script>
+<!-- <script src="{% static 'js/charts.js' %}"></script>
+<script src="{% static 'js/dash.js' %}"></script> -->
+{% endblock %}
+</html>

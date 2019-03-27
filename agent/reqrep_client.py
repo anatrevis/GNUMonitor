@@ -21,7 +21,7 @@ socket = context.socket(zmq.REQ)
 socket.connect("tcp://localhost:%s" % port)
 
 while True:
-    time.sleep (5)
+    time.sleep (1)
     print ("Sending request...")
     timenow = str(datetime.now())
     print (timenow)
