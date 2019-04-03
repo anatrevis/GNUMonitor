@@ -1,4 +1,4 @@
-var cont = chart1.series[0].data.length;
+var cont = 0;
 var throughput_array = [];
 var data_list = [];
 var id_last_item = 0;
@@ -6,12 +6,13 @@ var id_last_item = 0;
 function console_print_chart_data(){
   // console.log("This is the chart data: " + JSON.stringify(chart1.series[0].data));
   for (var i=0; i<chart1.series[0].data.length; i++){
-    console.log(chart1.series[0].data[i]['throughput']);
+    console.log(chart1.series[0].data[i]['y']);
   }
 };
 
 $( "#5points" ).click(function() {
     console_print_chart_data();
+    cont = chart1.series[0].data.length;
     console.log(cont);
     if (cont > 5){
       cont = 5;
@@ -21,6 +22,7 @@ $( "#5points" ).click(function() {
 
 $( "#10points" ).click(function() {
     console_print_chart_data();
+    cont = chart1.series[0].data.length;
     console.log(cont);
     if (cont > 10){
       cont = 10;
@@ -30,6 +32,7 @@ $( "#10points" ).click(function() {
 
 $( "#20points" ).click(function() {
     console_print_chart_data();
+    cont = chart1.series[0].data.length;
     console.log(cont);
     if (cont > 20){
       cont = 20;
@@ -48,7 +51,7 @@ function clearChartlData(cont){
 };
 
 
-setInterval(function (){
+function postChart1(){
   console.log("Data!");
   $.ajax({
       url: "/gnumonitor/rest",
@@ -76,12 +79,23 @@ setInterval(function (){
           alert('Got an error dude');
       }
     });
-  }, 1000);
+};
 
 
-  function plot_chart1(chart1_data){
-    for (var i = 0; i < chart1_data.length; i++){
-      chart1.series[0].addPoint(chart1_data[i]['throughput'])
-    }
-
+function plot_chart1(chart1_data){
+  for (var i = 0; i < chart1_data.length; i++){
+    //var x = chart1_data[i]['time'];
+    //var x = new Date(chart1_data[i]['time']).getTime();
+    //fist_unix_date = chart1_data[0]['time'];
+    var x = new Date(chart1_data[i]['time']).getTime();
+    var y = chart1_data[i]['throughput'];
+    chart1.series[0].addPoint([x, y]);
   }
+};
+
+
+$(document).ready(function(){
+  setInterval(function (){
+    postChart1();
+  }, 1000);
+});

@@ -18,9 +18,9 @@ var chart1 = Highcharts.chart('chart1', {
     },
 
     xAxis: {
-      // type:'datetime',
+      type:'datetime',
       // dateTimeLabelFormats: {
-      //   day: '%e of %b'
+      //    day: '%e of %b'
       // },
       //categories: [{% for data in monidata %}'{{ data.time.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
       title: {
