@@ -8,7 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 import django
 django.setup()
 
-from gnumonitor.models import MonitorData
+from gnumonitor.models import Chart, Data_Chart
 
 port = "5556"
 if len(sys.argv) > 1:
@@ -32,6 +32,6 @@ while True:
     print(raw_datetime)
 
     # salva no banco
-    data = MonitorData.objects.get_or_create(time=raw_datetime, throughput=raw_throughput)[0]
+    data = MonitorData.objects.get_or_create(id_chart=id_chart, time=raw_datetime, value=raw_throughput)[0]
 
     socket.send_string ("Success!")

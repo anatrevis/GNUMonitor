@@ -14,8 +14,9 @@
       {% for data in datalist %}
       <li>Data Info</li>
         <ul>
-            <li>Time: {{ data.time }} </li>
-            <li>Throughput: {{ data.throughput }} </li>
+            <li>id_chart: {{data.id_chart}}</li>
+            <li>time: {{ data.time }} </li>
+            <li>value: {{ data.value }} </li>
         </ul>
       {% endfor %}
     </ol>

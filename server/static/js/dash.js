@@ -51,7 +51,7 @@ function clearChartlData(cont){
 };
 
 
-function postChart1(){
+function postCharts(){
   console.log("Data!");
   $.ajax({
       url: "/gnumonitor/rest",
@@ -66,10 +66,23 @@ function postChart1(){
             id_last_item = data_list[(data.length) - 1]['id'];
           }
 
-          plot_chart1(data_list);
+          //console.log(list_charts.length);
 
-          console.log(data_list);
+          for (i=0; i<objects_chart_list.length;i++){
+            //var id_chart = list_charts[i];
+            var chart_data = data_list.filter(function(p){return p.id_chart_id == list_charts_pk[i];});
+            console.log(chart_data);
+            console.log(list_charts_pk[i]);
+            plot_chart(chart_data, objects_chart_list[i]);
+          }
+          //plot_chart1(data_list);
+          //
+          // for char in list_chart:
+          //   id = chart.id;
+          //   list_data = data_list.filter(function(p){return p.id_chart_id == id;});
+
           console.log(id_last_item);
+          //console.log(list_charts);
 
 
 
@@ -82,20 +95,27 @@ function postChart1(){
 };
 
 
-function plot_chart1(chart1_data){
-  for (var i = 0; i < chart1_data.length; i++){
+function plot_chart(chart_data, object_chart){
+  for (var i = 0; i < chart_data.length; i++){
     //var x = chart1_data[i]['time'];
     //var x = new Date(chart1_data[i]['time']).getTime();
     //fist_unix_date = chart1_data[0]['time'];
-    var x = new Date(chart1_data[i]['time']).getTime();
-    var y = chart1_data[i]['throughput'];
-    chart1.series[0].addPoint([x, y]);
+    var x = new Date(chart_data[i]['time']).getTime();
+    var y = chart_data[i]['value'];
+    object_chart.series[0].addPoint([x, y]);
   }
 };
 
 
+
+
 $(document).ready(function(){
-  setInterval(function (){
-    postChart1();
-  }, 1000);
+  postCharts();
+  // var btn = $('submit_button');
+  // $('submit_button').click(function(){
+  //     modal('hide');
+  // }
+  // setInterval(function (){
+  //   postChart1();
+  // }, 1000);
 });

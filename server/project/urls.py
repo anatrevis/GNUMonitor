@@ -21,6 +21,7 @@ from gnumonitor import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('chart_form/', views.add_chart_form, name='chart_form'),
     path('datalist/', views.datalist, name='datalist'),
     path('gnumonitor/', include('gnumonitor.urls')),
 ]

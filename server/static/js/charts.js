@@ -1,48 +1,60 @@
-var chart1 = Highcharts.chart('chart1', {
-    chart: {
-        type: 'line'
-    },
 
-    credits: {
-      enabled: false
-    },
 
-    title: {
-        text: 'Monitor Data'
-    },
+var objects_chart_list = [];
+for (var j=0; j<list_charts_pk.length; j++) {
+  var chart_div_id = list_charts_pk[j];
+  var chart_title = list_charts_title[j];
+  var charts_xAxis_name = list_charts_xAxis_name[j];
+  var charts_yAxis_name = list_charts_yAxis_name[j];
+  objects_chart_list[j]= Highcharts.chart({
+      chart: {
+          renderTo: String(chart_div_id),
+          type: 'line'
+      },
 
-    yAxis: {
+      credits: {
+        enabled: false
+      },
+
       title: {
-          text: 'Throughput'
-      }
-    },
+          text: String(chart_title)
+      },
 
-    xAxis: {
-      type:'datetime',
-      // dateTimeLabelFormats: {
-      //    day: '%e of %b'
-      // },
-      //categories: [{% for data in monidata %}'{{ data.time.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
-      title: {
-         text: 'Time'
-       },
-    },
 
-    plotOptions: {
-      line: {
-          // dataLabels: {
-          //     enabled: true
-          // },
-          enableMouseTracking: true
-      }
-    },
 
-    series: [{
-      name: 'Throughput',
-      data: [
-        //{% for data in monidata %}{{ data.throughput  }}{% if not forloop.last %}, {% endif %}{% endfor %}
-      ],
+      yAxis: {
+        title: {
+            text: String(charts_yAxis_name)
+        }
+      },
 
-  }]
+      xAxis: {
+        type:'datetime',
+        // dateTimeLabelFormats: {
+        //    day: '%e of %b'
+        // },
+        // categories: [{% for data in monidata %}'{{ data.time.time }}' {% if not forloop.last %}, {% endif %}{% endfor %}],
+        title: {
+           text: String(charts_xAxis_name)
+         },
+      },
 
-});
+      plotOptions: {
+        line: {
+            // dataLabels: {
+            //     enabled: true
+            // },
+            enableMouseTracking: true
+        }
+      },
+
+      series: [{
+        name: String(charts_yAxis_name)
+        // data: [
+        //   {% for data in monidata %}{{ data.value  }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        // ],
+
+    }]
+
+  });
+};
