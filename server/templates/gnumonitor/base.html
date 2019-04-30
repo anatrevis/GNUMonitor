@@ -21,11 +21,12 @@
         <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a>
         <a class="nav-link" href="{% url 'index' %}">Monitor</a>
         <a class="nav-link" href="{% url 'chart_form' %}">Add monitoring</a>
-        <a class="nav-link" href="{% url 'datalist' %}">Data list</a>
+        <!-- <a class="nav-link" href="{% url 'datalist' %}">Data list</a> -->
       </nav>
     </div>
 
     <div class="container" id="body_base">
+
       {% block body_block %}
       <!-- Anything outside of this will be inherited if you extend! -->
       {% endblock %}

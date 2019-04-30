@@ -1,55 +1,107 @@
 var cont = 0;
-var throughput_array = [];
 var data_list = [];
 var id_last_item = 0;
+var id_last_error = 0;
 
-function console_print_chart_data(){
-  // console.log("This is the chart data: " + JSON.stringify(chart1.series[0].data));
-  for (var i=0; i<chart1.series[0].data.length; i++){
-    console.log(chart1.series[0].data[i]['y']);
-  }
+function System_Errors() {
+  $.ajax({
+      url: "/gnumonitor/create_errors_list/",
+      type: 'GET',
+      dataType: 'json',
+      // data: {id_last_error: id_last_error},
+      success: function(errors) {
+          errorslist = errors;
+          //console.log(errorslist);
+
+          if (errorslist.length > 0){
+            if(!$("#errors_div").length){
+                $("#body_base").prepend("<div class='alert alert-danger' role='alert' id='errors_div'><p>Errors Reports:</p><ol id='errors_reports'></ol></div>");
+            }
+
+            var new_ids = [];
+            //ADD NEW ERRORS
+            for (i=0; i<errorslist.length;i++){
+            //for (var error in errorslist ) {
+              //console.log(errorslist[i]['id']);
+              new_ids.push(errorslist[i]['id']);
+              if(!$('#'+errorslist[i]['id']).length){
+                //console.log("Nao Existe");
+                $("#errors_reports").append("<p id="+errorslist[i]['id']+" >"+errorslist[i]['error']+"</p>");
+              }
+            }
+            //REMOVE SOLVED ERRORS
+            var old_ids = [];
+            var solved_errors = [];
+            $("#errors_reports").find("p").each(function(){
+              if(this.id>0){
+                old_ids.push(this.id);
+                //console.log('ID:' +this.id);
+                var contem = 0;
+                for (i=0; i<new_ids.length;i++){//se new_ids nao contem this.id entao faz
+                  //console.log("compara: "+new_ids[i]+ " com"+this.id);
+                  if (parseInt(new_ids[i]) == parseInt(this.id)){
+                    //console.log("deu igual")
+                    contem = 1;
+                    break;
+                  }
+                }
+                if(contem == 0){
+                  //console.log("deu DIFERENTE "+ this.id)
+                  $('#'+this.id).remove();
+                  solved_errors.push(this.id)
+                }
+              }
+            });
+            //console.log('Old:' +old_ids);
+            //console.log('New:' +new_ids);
+            //console.log('Solved:' +solved_errors);
+
+
+
+
+          } else {
+            if($("#errors_div").length){
+                $("#errors_div").remove();
+            }
+          }
+
+      },
+      failure: function(errors) {
+          alert('Got an error dude');
+      }
+    });
 };
 
-$( "#5points" ).click(function() {
-    console_print_chart_data();
-    cont = chart1.series[0].data.length;
-    console.log(cont);
-    if (cont > 5){
-      cont = 5;
-      clearChartlData(cont);
-    }
-});
+function Destroy_Chart() {
+  var btn = (event.target);
+  var raw_chart_pk_to_destroy = btn.id;
+  var chart_pk_to_destroy = raw_chart_pk_to_destroy.split("_")[2];
+  console.log(chart_pk_to_destroy);
+  $.ajax({
+       url:'/gnumonitor/delete_chart/',
+       type: 'GET',
+       data: {chart_pk_to_destroy: chart_pk_to_destroy},
+       success: function() {
+           console.log(chart_pk_to_destroy);
+           for (i=0; i<list_charts_pk.length;i++){
+             console.log(list_charts_pk[i]);
+             console.log(chart_pk_to_destroy);
+             if (list_charts_pk[i] == chart_pk_to_destroy){
+               list_charts_pk.splice(i, 1);
+               list_charts_title.splice(i, 1);
+               list_charts_xAxis_name.splice(i, 1);
+               list_charts_yAxis_name.splice(i, 1);
+               objects_chart_list.splice(i, 1);
+             }
+           }
+       },
+       failure: function(data) {
+           alert('Got an error dude');
+       }
+   });
 
-$( "#10points" ).click(function() {
-    console_print_chart_data();
-    cont = chart1.series[0].data.length;
-    console.log(cont);
-    if (cont > 10){
-      cont = 10;
-      clearChartlData(cont);
-    }
-});
-
-$( "#20points" ).click(function() {
-    console_print_chart_data();
-    cont = chart1.series[0].data.length;
-    console.log(cont);
-    if (cont > 20){
-      cont = 20;
-      clearChartlData(cont);
-    }
-});
-
-function clearChartlData(cont){
-  console.log("clearing chart data!");
-  while(chart1.series[0].data.length > cont){
-    console.log("clearing");
-    chart1.series[0].data[0].remove();
-  }
-  console_print_chart_data();
-  console.log("ready!");
+   btn.parentElement.remove(btn);
 };
-
 
 function postCharts(){
   console.log("Data!");
@@ -61,61 +113,115 @@ function postCharts(){
       success: function(data) {
 
           data_list = data;
+          console.log(data);
 
-          if (data.length > 0){
-            id_last_item = data_list[(data.length) - 1]['id'];
+          if (data_list.length > 0){
+            id_last_item = data_list[(data_list.length) - 1]['id'];
           }
-
-          //console.log(list_charts.length);
 
           for (i=0; i<objects_chart_list.length;i++){
-            //var id_chart = list_charts[i];
-            var chart_data = data_list.filter(function(p){return p.id_chart_id == list_charts_pk[i];});
-            console.log(chart_data);
-            console.log(list_charts_pk[i]);
-            plot_chart(chart_data, objects_chart_list[i]);
-          }
-          //plot_chart1(data_list);
-          //
-          // for char in list_chart:
-          //   id = chart.id;
-          //   list_data = data_list.filter(function(p){return p.id_chart_id == id;});
+             var chart_data = data_list.filter(function(p){return p.chart_object_id == list_charts_pk[i];});
+             // console.log(chart_data);
+             // console.log(list_charts_pk[i]);
+             plot_chart(chart_data, objects_chart_list[i]);
+           }
 
-          console.log(id_last_item);
-          //console.log(list_charts);
-
-
-
+          // console.log(id_last_item);
       },
       failure: function(data) {
-          console.log("hello")
           alert('Got an error dude');
       }
     });
 };
 
-
 function plot_chart(chart_data, object_chart){
+
   for (var i = 0; i < chart_data.length; i++){
+    //Controle do last id pra nao bugar o monitoramento
+    console.log(chart_data[i]['value']);
+    if (id_last_item < chart_data[i]['id']){
+      id_last_item = chart_data[i]['id'];
+    }
+
+    var shift = object_chart.series[0].data.length >= 60;
     //var x = chart1_data[i]['time'];
     //var x = new Date(chart1_data[i]['time']).getTime();
     //fist_unix_date = chart1_data[0]['time'];
     var x = new Date(chart_data[i]['time']).getTime();
     var y = chart_data[i]['value'];
-    object_chart.series[0].addPoint([x, y]);
-  }
+    object_chart.series[0].addPoint([x, y], true, shift);
+  };
 };
 
 
 
 
 $(document).ready(function(){
-  postCharts();
-  // var btn = $('submit_button');
-  // $('submit_button').click(function(){
-  //     modal('hide');
-  // }
-  // setInterval(function (){
-  //   postChart1();
-  // }, 1000);
+  setInterval(function (){
+    // console.log("list:" + objects_chart_list);
+    // console.log("length:" + objects_chart_list.length);
+    if(objects_chart_list.length == 0){
+      $( "#User_guide_1" ).show();
+    }
+
+    //console.log("errors:"+objects_errors_list)
+
+    // if(objects_errors_list.length == 0){
+    //    $( "#errors_div" ).hide();
+    // }
+    postCharts();
+    System_Errors();
+    // postErrors();
+
+  }, 1000);
+
 });
+
+// function clearChartlData(cont){
+//   console.log("clearing chart data!");
+//   while(chart1.series[0].data.length > cont){
+//     console.log("clearing");
+//     chart1.series[0].data[0].remove();
+//   }
+//   console_print_chart_data();
+//   console.log("ready!");
+// };
+// $( "#5points" ).click(function() {
+//     console_print_chart_data();
+//     cont = chart1.series[0].data.length;
+//     console.log(cont);
+//     if (cont > 5){
+//       cont = 5;
+//       clearChartlData(cont);
+//     }
+// });
+//
+// $( "#10points" ).click(function() {
+//     console_print_chart_data();
+//     cont = chart1.series[0].data.length;
+//     console.log(cont);
+//     if (cont > 10){
+//       cont = 10;
+//       clearChartlData(cont);
+//     }
+// });
+//
+// $( "#20points" ).click(function() {
+//     console_print_chart_data();
+//     cont = chart1.series[0].data.length;
+//     console.log(cont);
+//     if (cont > 20){
+//       cont = 20;
+//       clearChartlData(cont);
+//     }
+// });
+//
+// $( "#Clear" ).click(function() {
+//
+// });
+// function console_print_chart_data(){
+//   // console.log("This is the chart data: " + JSON.stringify(chart1.series[0].data));
+//   for (var i=0; i<chart1.series[0].data.length; i++){
+//     console.log(chart1.series[0].data[i]['y']);
+//   }
+// };

@@ -2,26 +2,6 @@ table, th, td {
   border: 2px solid black;
 }
 
-
-
-/* #body_base {
-  margin-top: 200px;
-  position: fixed;
-} */
-
-/* .navbar-brand {
-  margin-left: 20px;
-}
-
-.nav-link {
-  text-align: center;
-  color: black;
-}
-
-.nav-link:focus, .nav-link:hover {
-  color: grey;
-} */
-
 .monitor_container {
   display: none;
 }

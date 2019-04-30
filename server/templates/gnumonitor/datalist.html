@@ -8,15 +8,14 @@
   </head>
   <body>
     <h1>Monitored data:</h1>
-    {% if datalist %}
+    {% if chartlist %}
 
     <ol>
-      {% for data in datalist %}
+      {% for chart in chartlist %}
       <li>Data Info</li>
         <ul>
-            <li>id_chart: {{data.id_chart}}</li>
-            <li>time: {{ data.time }} </li>
-            <li>value: {{ data.value }} </li>
+            <li>chart obj: {{ chart.chart_object }}</li>
+            <li>error: {{ chart.error }} </li>
         </ul>
       {% endfor %}
     </ol>
