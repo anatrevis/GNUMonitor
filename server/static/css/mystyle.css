@@ -2,6 +2,13 @@ table, th, td {
   border: 2px solid black;
 }
 
-.monitor_container {
-  display: none;
+.alert {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.btn {
+  margin-left: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
