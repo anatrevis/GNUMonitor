@@ -10,18 +10,37 @@ from datetime import datetime
 #fakegen = Faker()
 client = xmlrpc.client.ServerProxy("http://192.168.56.2:8080")
 requestedList = []
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
 
 port = "5556"
 if len(sys.argv) > 1:
     port =  sys.argv[1]
     int(port)
 
-context = zmq.Context()
-print ("Connecting to server...")
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:%s" % port) #conecta ao servidor
+def connect_to_server():
+    #socket.close()
+    print ("Connecting to server...")
+    socket.connect("tcp://localhost:%s" % port) #conecta ao servidor
+
+connect_to_server()
 
 while True:
+
+    # hello = socket.recv()
+    # print(hello)
+
+    # print ("testing connection with server...")
+    # socket.send_string("connected")
+    #     #  Get the reply.
+    # try:
+    #     port = socket.recv()
+    #     if port != "":
+    #         print ("Connected to port ",  port )
+    # except:
+    #     print("Connection with agent has failed.")
+    #     connect_to_server()
+
     if not requestedList:
         requestToSendJson = json.dumps({'request_type':'data_to_monitor'})
         print (requestToSendJson)
@@ -43,8 +62,13 @@ while True:
                 valuesList.append(collectedValue)
 
             except Exception as e:
-                print(e)
-                exception_error = "Error:"+str(e)
+                print(e.errno)
+                if e.errno == 61:
+                    exception_error = "Warning: GNU-Radio is not running"
+
+                else:
+                    exception_error = "Error:"+str(e)
+
                 valuesList.append(exception_error)
 
             datetimeList.append(str(datetime.now()))

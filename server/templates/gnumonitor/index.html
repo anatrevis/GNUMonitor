@@ -9,10 +9,8 @@
   </head>
   <body>
 
+    <div id="User_guide_1" class="alert alert-primary" role="alert">Go to "add monitoring" to start monitoring your GNU-Radio!</div>
 
-    <div id="User_guide_1" class="alert alert-primary" role="alert">
-      <p>Go to "add monitoring" to start monitoring your GNU-Radio!</p>
-    </div>
 
     <div class="container" id="body_index">
 
@@ -20,50 +18,6 @@
 
 
     <script type="text/javascript">
-      // var objects_errors_list = [];
-      // function postErrors(){
-      //   {% if errorslist %}
-      //     if(!$("#errors_div").length){
-      //         $("#body_base").prepend("<div class='alert alert-danger' role='alert' id='errors_div'><p>Errors Reports:</p><ol id='errors_reports'></ol></div>");
-      //     }
-      //     var old_ids = [];
-      //     var new_ids = [];
-      //     $("#errors_reports").find("li").each(function(){if(this.id>0){old_ids.push(this.id);}});
-      //     //ADD NEW ERRORS
-      //     {% for error in errorslist %}
-      //       new_ids.push({{ error.pk }});
-      //       if(!$("#{{ error.pk }}").length){
-      //         $("#errors_reports").append("<li id='{{ error.pk }}'>Error in {{ error.chart_object.title }}:</li><ul><li>Time: {{ error.time }} </li><li> {{ error.error }} </li></ul>");
-      //         objects_errors_list.push("{{ error }}");
-      //       }
-      //     {% endfor %}
-      //
-      //     console.log('Old:' +old_ids);
-      //     console.log('New:' +new_ids);
-      //     //REMOVE SOLVED ERRORS
-      //     var solved_errors = [];
-      //
-      //     new_ids.forEach(function(item) {
-      //         solved_errors[item] = true;
-      //     });
-      //
-      //     var result = old_ids.reduce(function(prev, current) {
-      //         if (solved_errors.hasOwnProperty(current) === false) {
-      //             prev.push(current);
-      //         }
-      //         return prev;
-      //     }, [])
-      //
-      //     solved_errors.forEach(function(item) {
-      //         $('#item').remove();
-      //     });
-      //
-      //   {% else %}
-      //     if($("#errors_div").length){
-      //         $("#errors_div").remove();
-      //     }
-      //   {% endif %}
-      // };
 
       var list_charts_pk = [];
       {% if charts %}
@@ -76,7 +30,7 @@
           list_charts_title.push("{{ chart.title }}");
           list_charts_xAxis_name.push("{{ chart.xAxis_Name }}");
           list_charts_yAxis_name.push("{{ chart.yAxis_Name }}");
-          $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
+          $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
 
         {% endfor %}
       {% endif %}

@@ -19,18 +19,52 @@
   </head>
 
   <body>
-    <div class="container" id="navbar">
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a>
+    <div class="dashboard">
+      <!-- <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbar">
         <a class="nav-link" href="{% url 'index' %}">Monitor</a>
         <a class="nav-link disabled" id="add_monitoring" href="{% url 'chart_form' %}">Add monitoring</a>
-        <!-- <a class="nav-link" href="{% url 'datalist' %}">Data list</a> -->
-      </nav>
+      </nav> -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+      <div class="row dashboard">
+        <div class="col-4 side">
+            <div class="side-one">
+              <div class="heading">
+                  <img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/>
+                  <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
+              </div>
+
+              <div class="row notes" id="notifications">
+
+              </div>
+
+              <div class="row sideBar">
+                <div class="row sideBar-body">
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <div class="col-8 content"style="padding-left: 0px;">
+          <div class="content-one">
+            <div class="heading">
+                <a class="heading-name">John Doe</a>
+                <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
+            </div>
+            <div class= "container" id="body_base">
+              {% block body_block %}
+              <!-- Anything outside of this will be inherited if you extend! -->
+              {% endblock %}
+            </div>
+          </div>
+
+        </div>
+
+        </div>
+
     </div>
-    <div class="container" id="body_base">
-      {% block body_block %}
-      <!-- Anything outside of this will be inherited if you extend! -->
-      {% endblock %}
-    </div>
+
   </body>
 </html>
