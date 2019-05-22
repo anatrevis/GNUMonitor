@@ -42,7 +42,7 @@ class RestFunctions(object):
         if request.method == "GET":
             chart_pk_to_destroy = request.GET.get("chart_pk_to_destroy")
             Data_Chart.objects.filter(chart_object_id=chart_pk_to_destroy).delete();
-            Data_Error.objects.filter(chart_object_id=chart_pk_to_destroy).delete()
+            Data_Error.objects.filter(chart_object_id=chart_pk_to_destroy).delete();
             Chart.objects.filter(pk=chart_pk_to_destroy).delete();
     #         #tag_to_delete = get_object_or_404(Tag, title=tag)
     #         #tag_to_delete.delete()
@@ -50,8 +50,5 @@ class RestFunctions(object):
 
 
     def create_errors_list(request):
-        #sif request.method == "GET":
-            # id_last_error = request.GET["id_last_error"]
-
         errors = list(Data_Error.objects.order_by("time").values())
         return JsonResponse(errors, safe=False)

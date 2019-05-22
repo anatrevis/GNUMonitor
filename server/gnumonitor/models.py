@@ -13,7 +13,7 @@ class Data_Chart(models.Model):
     value = models.FloatField()
 
 class Data_Error(models.Model):
-    chart_object = models.ForeignKey(Chart, on_delete=models.PROTECT)
+    chart_object = models.ForeignKey(Chart, on_delete=models.PROTECT, blank=True, null=True)
     time = models.DateTimeField()
-    error = models.CharField(max_length=264)
+    description = models.CharField(max_length=264)
     type = models.CharField(max_length=264)

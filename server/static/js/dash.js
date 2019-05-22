@@ -3,6 +3,21 @@ var data_list = [];
 var id_last_item = 0;
 var id_last_error = 0;
 
+$(function(){
+    $(".heading-compose").click(function() {
+      $(".side-two").css({
+        "left": "0"
+      });
+    });
+
+    $(".newMessage-back").click(function() {
+      $(".side-two").css({
+        "left": "-100%"
+      });
+    });
+})
+
+
 function System_Errors() {
   $.ajax({
       url: "/gnumonitor/create_errors_list/",
@@ -11,11 +26,19 @@ function System_Errors() {
       // data: {id_last_error: id_last_error},
       success: function(errors) {
           errorslist = errors;
-          //console.log(errorslist);
+          console.log(errorslist);
+          var enable_btn = errorslist.filter(function(p){return p.description == "Warning: No client connection";});
+          //console.log(enable_btn);
+          if (enable_btn !== 'undefined' && enable_btn.length == 0){
+            //console.log("TEM CONEXAO COM O CLIENTE");
+            $("#add_monitoring").removeClass("nav-link disabled").addClass("nav-link");
+
+          }
 
           if (errorslist.length > 0){
             if(!$("#errors_div").length){
-                $("#body_base").prepend("<div class='alert alert-danger' role='alert' id='errors_div'><p>Errors Reports:</p><ol id='errors_reports'></ol></div>");
+                $("#body_base").prepend("<div id='errors_div'></div>");
+                // $("#notifications").prepend("<div class='col' id='errors_div'></div>");
             }
 
             var new_ids = [];
@@ -26,16 +49,25 @@ function System_Errors() {
               new_ids.push(errorslist[i]['id']);
               if(!$('#'+errorslist[i]['id']).length){
                 //console.log("Nao Existe");
-                $("#errors_reports").append("<p id="+errorslist[i]['id']+" >"+errorslist[i]['error']+"</p>");
+                //$("#errors_reports").append("<p id="+errorslist[i]['id']+" >"+errorslist[i]['chart_object_id']+" "+errorslist[i]['description']+"</p>");
+                if(errorslist[i]['type']=="Error"){
+                  $("#errors_div").append("<div class='alert alert-danger' role='alert' id="+errorslist[i]['id']+" >"+errorslist[i]['description']+"</div>");
+                }
+
+                else{
+                  $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+errorslist[i]['id']+" >"+errorslist[i]['description']+"</div>");
+                }
+
               }
             }
             //REMOVE SOLVED ERRORS
             var old_ids = [];
             var solved_errors = [];
-            $("#errors_reports").find("p").each(function(){
+
+            $("#errors_div").find("div").each(function(){
               if(this.id>0){
                 old_ids.push(this.id);
-                //console.log('ID:' +this.id);
+                console.log('ID:' +this.id);
                 var contem = 0;
                 for (i=0; i<new_ids.length;i++){//se new_ids nao contem this.id entao faz
                   //console.log("compara: "+new_ids[i]+ " com"+this.id);
@@ -143,7 +175,11 @@ function plot_chart(chart_data, object_chart){
       id_last_item = chart_data[i]['id'];
     }
 
+    //console.log("im the OBJECT:"+object_chart);
+
     var shift = object_chart.series[0].data.length >= 60;
+    //console.log("HERE:"+object_chart.series[0].data.length);
+
     //var x = chart1_data[i]['time'];
     //var x = new Date(chart1_data[i]['time']).getTime();
     //fist_unix_date = chart1_data[0]['time'];
@@ -152,6 +188,38 @@ function plot_chart(chart_data, object_chart){
     object_chart.series[0].addPoint([x, y], true, shift);
   };
 };
+
+
+function Clear_Chart(cont){
+  console.log("clearing chart data!");
+  var btn = (event.target);
+  var raw_chart_pk_to_clean = btn.id;
+  var chart_pk_to_clean = raw_chart_pk_to_clean.split("_")[2];
+  console.log(chart_pk_to_clean);
+  console.log(objects_chart_list);
+  for (i=0; i<list_charts_pk.length;i++){
+    console.log(list_charts_pk[i]);
+    console.log(chart_pk_to_clean);
+
+    if (list_charts_pk[i] == chart_pk_to_clean){
+      object_chart_to_clear = objects_chart_list[i];
+      console.log("ACHOU"+object_chart_to_clear);
+      // for(i=0; i<object_chart_to_clear.series[0].data.length; i++){
+      console.log(object_chart_to_clear.series[0].data.length);
+      // object_chart_to_clear.series[0].remove();
+      while(object_chart_to_clear.series[0].data.length > 0){
+        object_chart_to_clear.series[0].data[0].remove();
+      }
+      break;
+    }
+  }
+};
+//
+//   while(chart.series[0].data.length > cont){
+//     console.log("clearing");
+//     chart1.series[0].data[0].remove();
+//   }
+//   console.log("ready! Chart is clean");
 
 
 
@@ -174,7 +242,6 @@ $(document).ready(function(){
     // postErrors();
 
   }, 1000);
-
 });
 
 // function clearChartlData(cont){
