@@ -6,9 +6,10 @@ class Host(models.Model):
 
 class Host_Data(models.Model):
     host_object = models.ForeignKey(Host, on_delete=models.PROTECT)
-    time = models.DateTimeField()
-    cpu = models.FloatField()
-    ram = models.FloatField()
+    host_time = models.DateTimeField()
+    cpu_percent = models.FloatField()
+    memory_percent = models.FloatField()
+    disk_percent = models.FloatField()
 
 class Host_Error(models.Model):
     host_object = models.ForeignKey(Host, on_delete=models.PROTECT)
