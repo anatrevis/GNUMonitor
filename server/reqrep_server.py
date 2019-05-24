@@ -6,7 +6,7 @@ import json
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 import django
 django.setup()
-from gnumonitor.models import Host, Host_Data, Host_Error, Chart, Data_Chart, Data_Error
+from gnumonitor.models import Host, Host_Data, Host_Error, Chart, Chart_Data, Chart_Error
 
 def requestJsonDataFormat():
     chartsId, commandLines = [], []
@@ -30,6 +30,9 @@ def main():
     if len(sys.argv) > 1:
         port =  sys.argv[1]
         int(port)
+
+
+    ### Clear Char_Error and Host_Error every system restart ###
 
 
     context = zmq.Context()
