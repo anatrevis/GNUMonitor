@@ -3,19 +3,7 @@ var data_list = [];
 var id_last_item = 0;
 var id_last_error = 0;
 
-$(function(){
-    $(".heading-compose").click(function() {
-      $(".side-two").css({
-        "left": "0"
-      });
-    });
 
-    $(".newMessage-back").click(function() {
-      $(".side-two").css({
-        "left": "-100%"
-      });
-    });
-})
 
 
 function System_Errors() {
@@ -37,7 +25,7 @@ function System_Errors() {
 
           if (errorslist.length > 0){
             if(!$("#errors_div").length){
-                $("#body_base").prepend("<div id='errors_div'></div>");
+              $("#notifications").append("<div id='errors_div'></div>");
                 // $("#notifications").prepend("<div class='col' id='errors_div'></div>");
             }
 
@@ -209,19 +197,23 @@ function Clear_Chart(cont){
       // object_chart_to_clear.series[0].remove();
       while(object_chart_to_clear.series[0].data.length > 0){
         object_chart_to_clear.series[0].data[0].remove();
-      }
+      };
       break;
-    }
-  }
-};
-//
-//   while(chart.series[0].data.length > cont){
-//     console.log("clearing");
-//     chart1.series[0].data[0].remove();
-//   }
-//   console.log("ready! Chart is clean");
+    };
+    };
+  };
 
+  function Grid_Three(){
+    $("#body_index").addClass("row");
+    $(".monitoring_div").addClass("col");
+    // $("#body_index").prepend("<div class='monitoring_div col' style='margin: 5px;' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
+  };
 
+  function Grid_List(){
+    $("#body_index").removeClass("row");
+    $(".monitoring_div").removeClass("col");
+    // $("#body_index").prepend("<div class='monitoring_div' style='margin-bottom: 9px;margin-top: 2px;' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
+  };
 
 
 $(document).ready(function(){

@@ -9,17 +9,43 @@
   </head>
   <body>
     <div class="container" action =" ">
-      <p>Fill the form to register a chart:</p>
-      <form method="post">
 
-        {{form.as_p}}
-        {% csrf_token %}
+      <script type="text/javascript">
+        $("#heading_content").append("<p id='fill_the_form'>Fill the form to register a chart</p>");
+      </script>
 
-        <input type="submit" class="btn btn-secondary" value="Save changes">
-      </form>
+      <div class="row" id="registration_row">
+        <div class="col-sm">
+          <form method="post">
+
+            {{form.as_p}}
+            {% csrf_token %}
+
+
+
+            <a class="btn btn-secondary" href="{% url 'index' %}">Return</a>
+
+            <input type="submit" class="btn btn-secondary" value="Save changes">
+
+
+
+
+          </form>
+
+
+        </div>
+        <div class="col-sm"></div>
+      </div>
+
+
+
+
+
 
     </div>
 
   </body>
+<script src="{% static 'js/charts.js' %}"></script>
+<script src="{% static 'js/dash.js' %}"></script>
 {% endblock %}
 </html>

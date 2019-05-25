@@ -4,24 +4,21 @@
 {% block body_block %}
 <html lang="en" dir="ltr">
   <head>
-    <meta charset="utf-8">
-    <title>Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
   </head>
   <body>
+    <!-- <div id="User_guide_1" class="alert alert-primary" role="alert">Go to "add monitoring" to start monitoring your GNU-Radio!</div> -->
+    <!-- <div class='row' id="body_index"></div> -->
 
-    <div id="User_guide_1" class="alert alert-primary" role="alert">Go to "add monitoring" to start monitoring your GNU-Radio!</div>
-
-
-    <div class="container" id="body_index">
-
-    </div>
-
+    <div id="body_index"></div>
 
     <script type="text/javascript">
-
+      $("#heading_content").append("<ul class='nav justify-content-end'><li class='nav-item'><a class='nav-link disabled' id='add_monitoring' href='{% url 'chart_form' %}'><i class='fas fa-plus'></i></a></li><li class='nav-item'><a class='nav-link' href='#' onclick='Grid_List();' ><i class='fas fa-list'></i></i></a></li><li class='nav-item'><a class='nav-link'  href='#' onclick='Grid_Three();'><i class='fas fa-th'></i></a></li></ul>");
       var list_charts_pk = [];
       {% if charts %}
-        $("#User_guide_1").hide();
+        // $("#User_guide_1").hide();
         var list_charts_title = [];
         var list_charts_xAxis_name = [];
         var list_charts_yAxis_name = [];
@@ -30,12 +27,12 @@
           list_charts_title.push("{{ chart.title }}");
           list_charts_xAxis_name.push("{{ chart.xAxis_Name }}");
           list_charts_yAxis_name.push("{{ chart.yAxis_Name }}");
+          // $("#body_index").prepend("<div class='monitoring_div col' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
+
           $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
 
         {% endfor %}
       {% endif %}
-
-
 
     </script>
 

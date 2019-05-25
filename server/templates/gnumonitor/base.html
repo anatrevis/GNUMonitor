@@ -13,24 +13,60 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="http://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
   </head>
 
-  <body>
-    <div class="container" id="navbar">
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a>
-        <a class="nav-link" href="{% url 'index' %}">Monitor</a>
-        <a class="nav-link disabled" id="add_monitoring" href="{% url 'chart_form' %}">Add monitoring</a>
-        <!-- <a class="nav-link" href="{% url 'datalist' %}">Data list</a> -->
-      </nav>
+  <body style="background-color: rgb(247, 247, 247);">
+    <!-- <a class="navbar-brand" href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbar">
+      <a class="nav-link" href="{% url 'index' %}">Monitor</a>
+      <a class="nav-link disabled" id="add_monitoring" href="{% url 'chart_form' %}">Add monitoring</a>
+    </nav> -->
+
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+    <div class="side_bar">
+      <div class="heading sticky-top">
+        <ul class='nav'>
+          <li class='nav-item'> <a href="{% url 'index' %}"><img src="{% static "images/copa_logo_black.png" %}" width="95px" alt="Cannot load statics"/></a></li>
+        </ul>
+      </div>
+      <div class="notes" id="notifications"></div>
+      <div class="side_bar_cards_wrap">
+        <div class="side_bar_card">
+          <div class="row">
+            <div class="col">
+              <p class="side_bar_card_title">Gnu-Monitor: 192.168.122.56</p>
+            </div>
+            <div class="col-xs">
+              <p class="side_bar_card_last_time">16:32</p>
+            </div>
+          </div>
+          <div class="row">
+            <table id="table-sparkline">
+              <tbody id="tbody-sparkline">
+                <tr>
+                  <td class='label-sparkline'>CPU</td>
+                  <td data-sparkline="71, 78, 39, 66 "/>
+                  <td class='label-sparkline'>RAM</td>
+                  <td data-sparkline="68, 52, 80, 96 "/>
+                  <td class='label-sparkline'>DISK</td>
+                  <td data-sparkline="3, 26, -41, -30">
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+        <div class="side_bar_card"></div>
+      </div>
     </div>
-    <div class="container" id="body_base">
-      {% block body_block %}
-      <!-- Anything outside of this will be inherited if you extend! -->
-      {% endblock %}
+    <div class="content">
+      <div class="heading sticky-top" id="heading_content"></div>
+      <div class= "container" id="body_base">
+        {% block body_block %}
+        <!-- Anything outside of this will be inherited if you extend! -->
+        {% endblock %}
+      </div>
     </div>
   </body>
 </html>
