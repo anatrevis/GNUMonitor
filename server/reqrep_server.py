@@ -2,127 +2,198 @@ import zmq
 import sys
 import os
 import json
+from datetime import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 import django
 django.setup()
-from gnumonitor.models import Host, Host_Data, Host_Error, Chart, Chart_Data, Chart_Error
+from gnumonitor.models import Sys_Report, Host, Host_Data, Host_Report, Chart, Chart_Data, Chart_Report
 
-def requestJsonDataFormat():
+#### CONFIGURABLE VARIABLES ####
+serverPort = "5556"
+
+#### GLOBAL VARIABLES ####
+#zmqSocket = None
+
+def create_server():
+    global serverPort
+    context = zmq.Context()
+    zmqSocket = context.socket(zmq.REP)
+    zmqSocket.bind("tcp://*:%s" % serverPort) #LISTENING IN PORT
+    print("Server on!")
+    return zmqSocket
+
+
+def create_json_charts_to_monitor_list(hostObject):
     chartsId, commandLines = [], []
-    chartObjectList = Chart.objects.order_by('pk')
+    chartObjectList = Chart.objects.filter(host_object = hostObject).order_by('pk')
     for chartObject in chartObjectList:
         chartsId.append(chartObject.pk)
         commandLines.append(chartObject.parameter)
 
-    chartsToMonitorList = {"charts_to_monitor_list":[{"chart_id": id, "command_line":c} for id, c in zip(chartsId, commandLines)]}
+    chartsToMonitorList = {
+        "host_ip":hostObject.ip,
+        "host_name":hostObject.name,
+        "charts_to_monitor_list":[{"chart_id": id, "command_line":c} for id, c in zip(chartsId, commandLines)]}
     # Printing in JSON format
     chartsToMonitorListJson = json.dumps(chartsToMonitorList)
     print(chartsToMonitorListJson)
     return chartsToMonitorListJson
 
 
+def get_host_object(decodedJson):
+    ####### MENAGE AGENTS #######
+    if 'host_name' in decodedJson and 'host_ip' in decodedJson:
+        try:
+            rawHostName = decodedJson['host_name']
+            rawHostIp =decodedJson['host_ip']
+            if not Host.objects.filter(name=rawHostName, ip=rawHostIp).exists():
+                ## CRETE NEW AGENT
+                hostObject = Host.objects.create(name=rawHostName, ip=rawHostIp)
+            else:
+                ## GET OBJECT INSTACE OF THE AGENT
+                hostObject = Host.objects.get(name=rawHostName, ip=rawHostIp)
+            return hostObject
+        except:
+            print('Error trying to read agent basic infos')
+            return None
+
+
+def replay_data_to_monitor(zmqSocket, hostObject, decodedJson):
+    chartsToMonitorListJson = create_json_charts_to_monitor_list(hostObject)
+    print(chartsToMonitorListJson)
+    zmqSocket.send_json(chartsToMonitorListJson)
+
+
+def save_host_data(hostObject, decodedJson):
+    ## GETING AND SAVING HOST DATA WHEN EXIST
+    if 'cpu_percent' in decodedJson and 'memory_percent' in decodedJson and 'disk_percent' in decodedJson:
+        try:
+            #SAVING LOCAL TIME TO AVOID DIFERENT TIMES FROM MULTIPLE SYSTEMS
+            rawCpuPercent = decodedJson['cpu_percent']
+            rawMemoryPercent = decodedJson['memory_percent']
+            rawDiskPercent = decodedJson['disk_percent']
+            Host_Data.objects.create(host_object=hostObject, time=str(datetime.now()), cpu_percent=rawCpuPercent, memory_percent=rawMemoryPercent, disk_percent=rawDiskPercent)
+        except:
+            print("Errro tring to collect and save host data")
+
+
+def save_chart_data(hostObject, decodedJson):
+    if 'new_data_list' in decodedJson:
+        rawDataList = decodedJson['new_data_list']
+        for newData in rawDataList:
+            rawChartId = newData['chart_id']
+            if Chart.objects.filter(pk=rawChartId).exists():
+                chartObject = Chart.objects.get(pk=rawChartId)
+                rawValue = newData['value']
+                #print(rawValue)
+                if not isinstance(rawValue, str):
+                    if not rawValue == 'null': #IF IT IS NOT NULL SAVE DATA
+                        data = Chart_Data.objects.create(chart_object=chartObject, time=str(datetime.now()), value=rawValue)
+
+
+def replay_new_data(zmqSocket, hostObject, decodedJson):
+    if 'new_data_list' in decodedJson:
+        oldChartsIdList = [] #I NEED THIS TO COMPARE AT THE END OF THE FOR
+        #VERIFY IF IS NECESSARY TO INFORME NEW DATA TO MONITOR FOR THE AGENT
+        rawDataList = decodedJson['new_data_list']
+        for newData in rawDataList:
+            oldChartsIdList.append(newData['chart_id'])
+
+        chartsListPk = Chart.objects.order_by('pk')
+
+        newChartsIdList = []
+        for item in chartsListPk:
+            newChartsIdList.append(item.id)
+
+        # sorting both lists to compare
+        oldChartsIdList.sort()
+        newChartsIdList.sort()
+        #print("Old:", old_charts_id_list)
+        #print("New:", new_charts_id_list)
+
+        # using == to check if lists are equal
+        if oldChartsIdList == newChartsIdList:
+            jsonResponseOK = json.dumps({
+                "host_ip":hostObject.ip,
+                "host_name":hostObject.name,
+                "request_return":"New data added!"})
+            zmqSocket.send_json (jsonResponseOK)
+        else:
+            chartsToMonitorListJson = create_json_charts_to_monitor_list(hostObject)
+            #print(chartsToMonitorListJson)
+            zmqSocket.send_json(chartsToMonitorListJson)
+    else:
+        jsonResponseOK = json.dumps({
+            "host_ip":hostObject.ip,
+            "host_name":hostObject.name,
+            "request_return":"New data added!"})
+        zmqSocket.send_json (jsonResponseOK)
+
+
+def save_report(hostObject, decodedJson):
+    if "sys_report" in decodedJson:
+        rawReport = decodedJson['sys_report']
+        rawReportDescription = rawReport['description']
+        rawReportEtype = rawReport['etype']
+        if not Sys_Report.objects.filter(description=rawReportDescription,etype=rawReportEtype).exists():
+            Sys_Report.objects.create(description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
+    elif "host_report" in decodedJson:
+        rawReport = decodedJson['host_report']
+        rawReportDescription = rawReport['description']
+        rawReportEtype = rawReport['etype']
+        if not Host_Report.objects.filter(host_object=hostObject,description=rawReportDescription,etype=rawReportEtype).exists():
+            Host_Report.objects.create(description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
+    elif "chart_report" in decodedJson:
+        rawReport = decodedJson['chart_report']
+        rawReportDescription = rawReport['description']
+        rawReportEtype = rawReport['etype']
+        rawCharId = rawReport['chart_id']
+        chartObject = Chart.objects.get(pk=rawChartId)
+        if not Chart_Report.objects.filter(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype).exists():
+            Chart_Report.objects.create(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
+
+
+def replay_report(zmqSocket, hostObject):
+    jsonResponseReport = json.dumps({
+        "host_ip":hostObject.ip,
+        "host_name":hostObject.name,
+        "request_return":"Report received!"})
+    zmqSocket.send_json(jsonResponseReport)
+
+
+def process_agent_request(zmqSocket, hostObject, decodedJson):
+    if 'request_type' in decodedJson:
+        rawRequestType = decodedJson['request_type']
+        if rawRequestType == "data_to_monitor":
+            replay_data_to_monitor(zmqSocket, hostObject, decodedJson)
+        elif rawRequestType == "new_data":
+            save_host_data(hostObject, decodedJson)
+            save_chart_data(hostObject, decodedJson)
+            replay_new_data(zmqSocket, hostObject, decodedJson)
+        elif rawRequestType == "report":
+            save_report(hostObject, decodedJson)
+            replay_report(zmqSocket, hostObject)
+
+
 def main():
-
-    #### CONFIGURABLE VARIABLES ####
-    port = "5556"
-
+    global serverPort
     if len(sys.argv) > 1:
-        port =  sys.argv[1]
-        int(port)
+        serverPort =  sys.argv[1]
 
+    #TODO: Clear Char_Error and Host_Error every system restart ###
 
-    ### Clear Char_Error and Host_Error every system restart ###
+    zmqSocket = create_server()
 
-
-    context = zmq.Context()
-    zmqsocket = context.socket(zmq.REP)
-    zmqsocket.bind("tcp://*:%s" % port) #escuta a porta
-
-    print("Server on!")
-    print("waiting for agent...")
     while True:
         #  Wait for next request from client
-        recivedJson = zmqsocket.recv_json()  #socket zmq.REP will block on recv unless it has received a request.
+        recivedJson = zmqSocket.recv_json()  #socket zmq.REP will block on recv unless it has received a request.
         print ("Received data: ", recivedJson)
         decodedJson = json.loads(recivedJson)
 
-        ####### MENAGE AGENTS #######
-        try:
-            raw_host_name = decodedJson['host_name']
-            raw_host_ip =decodedJson['host_ip']
-        except:
-            print('Error trying to read agent basic infos')
+        hostObject = get_host_object(decodedJson)
 
-        if not Host.objects.filter(name=raw_host_name, ip=raw_host_ip).exists():
-            ## CRETE NEW AGENT
-            hostObject = Host.objects.create(name=raw_host_name, ip=raw_host_ip)
-        else:
-            ## GET OBJECT INSTACE OF THE AGENT
-            hostObject = Host.objects.get(name=raw_host_name, ip=raw_host_ip)
-
-
-        ## GETING AND SAVING HOST DATA WHEN EXIST
-        if 'host_time' in decodedJson:
-            try:
-                raw_host_time = decodedJson['host_time']
-                raw_cpu_percent = decodedJson['cpu_percent']
-                raw_memory_percent = decodedJson['memory_percent']
-                raw_disk_percent = decodedJson['disk_percent']
-                Host_Data.objects.create(host_object=hostObject, host_time=raw_host_time, cpu_percent=raw_cpu_percent, memory_percent=raw_memory_percent, disk_percent=raw_disk_percent)
-            except:
-                print("Errro tring to collect and save Host Data")
-
-        ## END MANAGEMENT OF AGENT ##
-
-
-        raw_request_type = decodedJson['request_type']
-        if raw_request_type == "data_to_monitor":
-            chartsToMonitorListJson = requestJsonDataFormat()
-            print(chartsToMonitorListJson)
-            zmqsocket.send_json (chartsToMonitorListJson)
-
-
-        elif raw_request_type == "new_data":
-            old_charts_id_list = [] #just to compare at the end of the for
-            new_data_list = decodedJson['new_data_list']
-
-            for new_data in new_data_list:
-                raw_datetime = new_data['datetime']
-                print(raw_datetime)
-                raw_chart_id = new_data['chart_id']
-                chart_object = Chart.objects.get(pk=raw_chart_id)
-                old_charts_id_list.append(raw_chart_id)
-                raw_value = new_data['value']
-                print(raw_value)
-
-                if isinstance(raw_value, str) and "Error:" in raw_value:
-                    if not Data_Error.objects.filter(chart_object=chart_object, error=raw_value).exists() :
-                        raw_type = "Error"
-                        data = Data_Error.objects.create(chart_object=chart_object, time=raw_datetime, error=raw_value, type = raw_type)
-                else:
-                    # salva no banco
-                    data = Data_Chart.objects.create(chart_object=chart_object, time=raw_datetime, value=raw_value)
-
-            #verica se houve alteracao na lista de graficos monitorados
-            charts_list_pk = Chart.objects.order_by('pk')
-            print("\n\n", charts_list_pk, "\n\n")
-            new_charts_id_list = []
-            for item in charts_list_pk:
-                new_charts_id_list.append(item.id)
-            # sorting both the lists
-            old_charts_id_list.sort()
-            new_charts_id_list.sort()
-            print("Old:", old_charts_id_list)
-            print("New:", new_charts_id_list)
-            # using == to check if lists are equal
-            if old_charts_id_list == new_charts_id_list:
-                jsonResponseOK = json.dumps({"request_result":"New data added!"})
-                zmqsocket.send_json (jsonResponseOK)
-            else:
-                chartsToMonitorListJson = requestJsonDataFormat()
-                print(chartsToMonitorListJson)
-                zmqsocket.send_json (chartsToMonitorListJson)
+        process_agent_request(zmqSocket, hostObject, decodedJson)
 
 
 if __name__ == "__main__":

@@ -11,6 +11,8 @@ import random
 #### CONFIGURABLE VARIABLES ####
 serverPort = "5556"
 serverIp = "localhost"
+retryConnectionInterval = 3
+monitoringInterval = 5
 
 #### GLOBAL VARIABLES ####
 gnuRadioClient = None
@@ -21,12 +23,12 @@ requestedChartList = []
 
 
 def connect_to_server():
-    global zmqSocket
+    global zmqSocket, serverIp, serverPort
     #socket.close()
     print ("Connecting to server...")
     context = zmq.Context()
     zmqSocket = context.socket(zmq.REQ)
-    zmqSocket.connect("tcp://%s:%s" %serverIp,  %serverPort) #conecta ao servidor
+    zmqSocket.connect("tcp://%s:%s" % (serverIp, serverPort)) #conecta ao servidor
 
 
 def connect_to_gnuradio():
@@ -35,18 +37,54 @@ def connect_to_gnuradio():
 
 
 def process_server_response(jsonResponse):
-    global requestedChartList
+    global requestedChartList, hostIp, hostName
     print ("Received reply: ", jsonResponse)
     responseDecodedJson = json.loads(jsonResponse)
-    # VERIFY FOR EACH RESPONSE IF A CHART DATA TO MONITOR WAS UPDATED
-    if "charts_to_monitor_list" in responseDecodedJson:
-        requestedChartList = responseDecodedJson["charts_to_monitor_list"]
-        print("Monitored List of Charts Updated!")
-    if "request_return" in responseDecodedJson:
-        print(responseDecodedJson["request_return"])
+    if responseDecodedJson['host_ip'] == hostIp and responseDecodedJson['host_name'] == hostName:
+        # VERIFY FOR EACH RESPONSE IF A CHART DATA TO MONITOR WAS UPDATED
+        if "charts_to_monitor_list" in responseDecodedJson:
+            requestedChartList = responseDecodedJson["charts_to_monitor_list"]
+            print("Monitored List of Charts Updated!")
+        if "request_return" in responseDecodedJson:
+            print(responseDecodedJson["request_return"])
 
 
-def report_to_server(etype, description):
+def chart_report_to_server(chartId, etype, description):
+    global zmqSocket, hostName, hostIp
+    requestToSendJson = json.dumps({
+        'host_name':hostName,
+        'host_ip':hostIp,
+        'request_type':'report',
+        'chart_report':{
+            'chart_id':chartId,
+            'description':description,
+            'etype':etype,
+            'time':str(datetime.now())
+            }
+        })
+    print (requestToSendJson)
+    zmqSocket.send_json(requestToSendJson)
+    process_server_response(zmqSocket.recv_json()) #THIS IS NECESSARY TO NOT CRASH ZMQ WORKING ROUTINE
+
+
+def host_report_to_server(etype, description):
+    global zmqSocket, hostName, hostIp
+    requestToSendJson = json.dumps({
+        'host_name':hostName,
+        'host_ip':hostIp,
+        'request_type':'report',
+        'host_report':{
+            'description':description,
+            'etype':etype,
+            'time':str(datetime.now())
+            }
+        })
+    print (requestToSendJson)
+    zmqSocket.send_json(requestToSendJson)
+    process_server_response(zmqSocket.recv_json()) #THIS IS NECESSARY TO NOT CRASH ZMQ WORKING ROUTINE
+
+
+def sys_report_to_server(etype, description):
     global zmqSocket, hostName, hostIp
     requestToSendJson = json.dumps({
         'host_name':hostName,
@@ -63,7 +101,7 @@ def report_to_server(etype, description):
     process_server_response(zmqSocket.recv_json()) #THIS IS NECESSARY TO NOT CRASH ZMQ WORKING ROUTINE
 
 
-def get_credentials():
+def define_credentials():
     global hostIp, hostName
     ### GET AGENT NAME/IP CREDENTIALS ###
     try:
@@ -76,13 +114,13 @@ def get_credentials():
     except:
         ### REPORT ERROR TO SERVER ###
         print("Unable to get Hostname and IP")
-        report_to_server('Warning', 'One or more agents are attempting to connect without Name/IP credentials.')
+        sys_report_to_server('Warning', 'One or more agents are attempting to connect without Name/IP credentials.')
         #return 0
         sys.exit(1)
 
 
-def request_new_chart_list()
-    global requestedChartList, zmqSocket
+def request_new_chart_list():
+    global requestedChartList, zmqSocket, hostName, hostIp
     requestToSendJson = json.dumps({
         'host_name':hostName,
         'host_ip':hostIp,
@@ -94,8 +132,9 @@ def request_new_chart_list()
     #print(recivedJson)
     requestedDecodedJson = json.loads(recivedJson)
     if "charts_to_monitor_list" in requestedDecodedJson:
-        requestedChartList = requestedDecodedJson["charts_to_monitor_list"]
-        print (requestedChartList)
+        if requestedDecodedJson['host_ip'] == hostIp and requestedDecodedJson['host_name'] == hostName:
+            requestedChartList = requestedDecodedJson["charts_to_monitor_list"]
+            print(requestedChartList)
 
 
 def send_chart_and_host_data_to_server(valuesList, idChartList, cpuPercent, memoryPercent, diskPercent):
@@ -137,7 +176,7 @@ def send_chart_data_to_server(valuesList, idChartList):
     process_server_response(zmqSocket.recv_json()) #socket zmq.REQ will block on send unless it has successfully received a reply back.
 
 
-def send_data_to_server(cpuPercent, memoryPercent, diskPercent):
+def send_host_data_to_server(cpuPercent, memoryPercent, diskPercent):
     global hostName, hostIp, zmqSocket
     timeNow = str(datetime.now())
     monitoredDataList = {"host_name":hostName,
@@ -155,7 +194,7 @@ def send_data_to_server(cpuPercent, memoryPercent, diskPercent):
 
 
 def main():
-    global serverIp, serverPort, requestedChartList
+    global serverIp, serverPort, requestedChartList, retryConnectionInterval, monitoringInterval
 
     if len(sys.argv) > 2:
         serverIp = sys.argv[1]
@@ -170,7 +209,7 @@ def main():
         if not requestedChartList:
             ### REQUEST COMMANDS TO MONITOR ###
             request_new_chart_list()
-            time.sleep (3)
+            time.sleep (retryConnectionInterval)
         else:
             try:
                 ### COLECT HOST DATA ###
@@ -179,7 +218,7 @@ def main():
                 diskPercent = psutil.disk_usage('/')[3]
             except:
                 ### REPORT ERROR TO SERVER ###
-                report_to_server('Warning', 'The agent are unable to provide monitored host data.')
+                host_report_to_server('Warning', 'The agent are unable to provide monitored host data.')
 
             ### COLLECT GNURADIO DATA ###
             valuesList, idChartList = [], []
@@ -192,10 +231,10 @@ def main():
                     ### REPORT ERROR TO SERVER ###
                     #print(e.errno)
                     if e.errno == 61:
-                        report_to_server('Warning', 'GNU-Radio is not running')
+                        host_report_to_server('Warning', 'GNU-Radio is not running')
                         break
                     else:
-                        report_to_server('Error', str(e))
+                        chart_report_to_server(monitorChart["chart_id"],'Error', str(e))
                         collectedValue = 'null' #JUST TO NOT BROKE THE DATA AND CHART ID LIST ORDER
 
                 valuesList.append(collectedValue)
@@ -211,9 +250,9 @@ def main():
             else:
                 if cpuPercent and memoryPercent and diskPercent:
                     #IF I HAVE JUST HOST DATA
-                    send_data_to_server(cpuPercent, memoryPercent, diskPercent)
+                    send_host_data_to_server(cpuPercent, memoryPercent, diskPercent)
 
-            time.sleep (5)
+            time.sleep (monitoringInterval)
 
 
 if __name__ == "__main__":

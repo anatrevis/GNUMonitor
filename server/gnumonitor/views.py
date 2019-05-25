@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
-from gnumonitor.models import Chart, Data_Chart, Data_Error
+from gnumonitor.models import Sys_Report, Host, Host_Data, Host_Report, Chart, Chart_Data, Chart_Report
 from gnumonitor.forms import ChartForm
 from . import forms
 
 def index(request):
     chart_list = Chart.objects.order_by('pk')
-    errors_list = Data_Error.objects.order_by('pk')
+    errors_list = Chart_Report.objects.order_by('pk')
     monitor_charts ={'charts':chart_list, 'errorslist':errors_list}
     return render(request, "gnumonitor/index.html", context=monitor_charts)
 
@@ -31,7 +31,7 @@ def add_chart_form(request):
 
 
 def chartlist(request):
-    chart_list = Data_Error.objects.order_by('pk')
+    chart_list = Chart_Report.objects.order_by('pk')
     chart_dict ={'chartlist':chart_list}
     return render(request, "gnumonitor/datalist.html", context=chart_dict)
 
