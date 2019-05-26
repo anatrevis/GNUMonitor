@@ -5,15 +5,16 @@ from gnumonitor.forms import ChartForm
 from . import forms
 
 def index(request):
-    chart_list = Chart.objects.order_by('pk')
-    errors_list = Chart_Report.objects.order_by('pk')
-    monitor_charts ={'charts':chart_list, 'errorslist':errors_list}
-    return render(request, "gnumonitor/index.html", context=monitor_charts)
 
-# def errors(request):
-#     errors_list = Data_Error.objects.order_by('pk')
-#     system_errors ={'errorslist':errors_list}
-#     return render(request, "gnumonitor/index.html", context=system_errors)
+    chart_list = Chart.objects.order_by('pk')
+    chart_errors_list = Chart_Report.objects.order_by('pk')
+    host_list = Host.objects.order_by('pk')
+    host_errors_list = Host_Report.objects.order_by('pk')
+    monitor = {'charts':chart_list, 'charterrorslist':chart_errors_list,'hosts':host_list, 'hosterrorslist':host_errors_list}
+    return render(request, "gnumonitor/index.html", context=monitor)
+
+
+
 
 def add_chart_form(request):
     form = ChartForm()
@@ -30,13 +31,12 @@ def add_chart_form(request):
     return render(request, 'gnumonitor/chart_form.html', {'form':form})
 
 
+
+# Create your views here.
 def chartlist(request):
     chart_list = Chart_Report.objects.order_by('pk')
     chart_dict ={'chartlist':chart_list}
     return render(request, "gnumonitor/datalist.html", context=chart_dict)
-
-
-# Create your views here.
 
 def hello(request):
     return HttpResponse('Hello World!')

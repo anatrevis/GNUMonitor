@@ -30,35 +30,11 @@
         </ul>
       </div>
       <div class="notes" id="notifications"></div>
-      <div class="side_bar_cards_wrap">
-        <div class="side_bar_card">
-          <div class="row">
-            <div class="col">
-              <p class="side_bar_card_title">Gnu-Monitor: 192.168.122.56</p>
-            </div>
-            <div class="col-xs">
-              <p class="side_bar_card_last_time">16:32</p>
-            </div>
-          </div>
-          <div class="row">
-            <table id="table-sparkline">
-              <tbody id="tbody-sparkline">
-                <tr>
-                  <td class='label-sparkline'>CPU</td>
-                  <td data-sparkline="71, 78, 39, 66 "/>
-                  <td class='label-sparkline'>RAM</td>
-                  <td data-sparkline="68, 52, 80, 96 "/>
-                  <td class='label-sparkline'>DISK</td>
-                  <td data-sparkline="3, 26, -41, -30">
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="side_bar_cards_wrap" onclick='Select_Card();'></div>
 
-        </div>
-        <div class="side_bar_card"></div>
-      </div>
     </div>
+
+
     <div class="content">
       <div class="heading sticky-top" id="heading_content"></div>
       <div class= "container" id="body_base">

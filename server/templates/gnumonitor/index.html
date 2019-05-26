@@ -8,6 +8,31 @@
     <script src="http://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
   </head>
+
+  <!-- <script type="text/javascript">
+    var list_hosts_pk = [];
+    {% if hosts %}
+      // $("#User_guide_1").hide();
+      var list_hosts_name = [];
+      var list_hosts_ip = [];
+      {% for host in hosts %}
+      // list_hosts_pk=[1,2];   // ERASE HERE UNCOMMENT BELOW
+        list_hosts_pk.push({{ host.pk }});
+        list_hosts_name.push("{{ host.name }}");
+        list_hosts_ip.push("{{ host.ip }}");
+        $(".side_bar_cards_wrap").prepend("<div class='side_bar_card {{ host.pk }} sidecard' id='{{ host.pk }}'><div class='row' id='{{ host.pk }}'><div class='col' id='{{ host.pk }}'><p class='side_bar_card_title' id='{{ host.pk }}'>{{ host.name }} ({{ host.ip }})</p></div><div class='col-xs'id='{{ host.pk }}'><p class='side_bar_card_last_time' id='{{ host.pk }}'>16:32</p></div></div><div class='row' id='{{ host.pk }}'><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id='{{ host.pk }}'>CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id='{{ host.pk }}'>RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id='{{ host.pk }}' >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div></div>");
+
+        //ERASE BELOW
+        // $(".side_bar_cards_wrap").prepend("<div class='side_bar_card 2 sidecard' id='2'><div class='row' id='2'><div class='col' id='2'><p class='side_bar_card_title' id='2'>testando ({{ host.ip }})</p></div><div class='col-xs'id='2'><p class='side_bar_card_last_time' id='2'>16:32</p></div></div><div class='row' id='2'><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id='2'>CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id='2'>RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id='2' >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div></div>");
+
+      {% endfor %}
+      //Fist VM start selected
+      console.log("a primeira VM comeca selecionada")
+      $("."+list_hosts_pk[0]+"").css("background-color", "#eee");
+
+    {% endif %}
+  </script> -->
+
   <body>
     <!-- <div id="User_guide_1" class="alert alert-primary" role="alert">Go to "add monitoring" to start monitoring your GNU-Radio!</div> -->
     <!-- <div class='row' id="body_index"></div> -->
@@ -16,28 +41,29 @@
 
     <script type="text/javascript">
       $("#heading_content").append("<ul class='nav justify-content-end'><li class='nav-item'><a class='nav-link disabled' id='add_monitoring' href='{% url 'chart_form' %}'><i class='fas fa-plus'></i></a></li><li class='nav-item'><a class='nav-link' href='#' onclick='Grid_List();' ><i class='fas fa-list'></i></i></a></li><li class='nav-item'><a class='nav-link'  href='#' onclick='Grid_Three();'><i class='fas fa-th'></i></a></li></ul>");
-      var list_charts_pk = [];
-      {% if charts %}
-        // $("#User_guide_1").hide();
-        var list_charts_title = [];
-        var list_charts_xAxis_name = [];
-        var list_charts_yAxis_name = [];
-        {% for chart in charts %}
-          list_charts_pk.push({{ chart.pk }});
-          list_charts_title.push("{{ chart.title }}");
-          list_charts_xAxis_name.push("{{ chart.xAxis_Name }}");
-          list_charts_yAxis_name.push("{{ chart.yAxis_Name }}");
-          // $("#body_index").prepend("<div class='monitoring_div col' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
-
-          $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
-
-        {% endfor %}
-      {% endif %}
+      // var list_charts_pk = [];
+      // {% if charts %}
+      //   // $("#User_guide_1").hide();
+      //   var list_charts_title = [];
+      //   var list_charts_xAxis_name = [];
+      //   var list_charts_yAxis_name = [];
+      //   {% for chart in charts %}
+      //     list_charts_pk.push({{ chart.pk }});
+      //     list_charts_title.push("{{ chart.title }}");
+      //     list_charts_xAxis_name.push("{{ chart.xAxis_Name }}");
+      //     list_charts_yAxis_name.push("{{ chart.yAxis_Name }}");
+      //     // $("#body_index").prepend("<div class='monitoring_div col' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
+      //
+      //     $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_{{ chart.pk }}' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_{{ chart.pk }}' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='{{ chart.pk }}'  style='width:100%; height:400px;' > </div></div>");
+      //
+      //   {% endfor %}
+      // {% endif %}
 
     </script>
 
   </body>
-<script src="{% static 'js/charts.js' %}"></script>
 <script src="{% static 'js/dash.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+
 {% endblock %}
 </html>

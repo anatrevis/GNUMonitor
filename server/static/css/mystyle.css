@@ -39,10 +39,20 @@
 .side_bar_card {
   padding: 3px;
   border-top: 2px solid rgb(247, 247, 247);
-  height: 85px;
+  height:fit-content;
   background-color: white;
   width: 100%;
+  cursor: pointer;
 }
+
+/* .side_bar_cards_wrap :hover {
+  background-color: #eee;
+}
+
+.side_bar_card :hover{
+  background-color: #eee;
+} */
+
 
 .alert{
   margin: 0 !important;
@@ -85,11 +95,14 @@ td {
     font-size: 9px;
 }
 
+
 .label-sparkline{
   -webkit-transform: rotate(270deg);
   font-size: 9px;
   color: #6b757d;
+  padding:0px !important;
 }
+
 
 
 .side_bar_card_title{
@@ -128,7 +141,6 @@ td {
   padding: 5px !important;
 }
 
-#body_index{
-  /*grid-template-rows: 200px 200px 200px; */
-  /* grid-auto-rows: minmax(200px, auto); */
+.card_selected{
+  background-color: #eee;
 }

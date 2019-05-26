@@ -14,6 +14,26 @@ from django.http import HttpResponse
 
 class RestFunctions(object):
 
+    def Monitoring_Hosts (request):
+        if request.method == "GET":
+            id_last_host = request.GET["id_last_host"]
+            hosts = list(Host.objects.filter(id__gt=id_last_host).order_by('pk').values())
+            return JsonResponse(hosts, safe=False)
+
+    def Monitoring_Charts (request):
+        if request.method == "GET":
+            #id_last_chart = request.GET.get("id_last_chart")
+            # id_selected_host = request.GET[]"id_selected_host")
+            # id_last_chart = request.GET["id_last_chart"]
+            id_selected_host = request.GET["id_selected_host"]
+            print('ID_HOST_SELECTED: %s' %id_selected_host)
+            hostObject = Host.objects.get(pk=id_selected_host)
+            print(hostObject)
+            charts = list(Chart.objects.filter(host_object=hostObject).order_by('pk').values())
+            print(charts)
+            return JsonResponse(charts, safe=False)
+
+
     def Monitoring_Data(request):
 
         if request.method == "GET":
