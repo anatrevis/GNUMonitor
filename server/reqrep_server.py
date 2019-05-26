@@ -11,9 +11,20 @@ from gnumonitor.models import Sys_Report, Host, Host_Data, Host_Report, Chart, C
 
 #### CONFIGURABLE VARIABLES ####
 serverPort = "5556"
+longTimeConnection = 1
 
 #### GLOBAL VARIABLES ####
 #zmqSocket = None
+
+## STRING DEFINITIONS ##
+reportError = 'Error'
+reportInfo = 'Info'
+reportWarning = 'Warning'
+reportSuccess = 'Success'
+reportNoHost ='Waiting for agent connection'
+reportNoChart = 'Please add a chart to start monitoring in this agent'
+reportNoConnection = 'This agent does not connect for a long time'
+reportNoChartData = 'No data to display'
 
 def create_server():
     global serverPort
@@ -176,15 +187,81 @@ def process_agent_request(zmqSocket, hostObject, decodedJson):
             replay_report(zmqSocket, hostObject)
 
 
+def clear_all_notifications():
+    Sys_Report.objects.all().delete()
+    Host_Report.objects.all().delete()
+    Chart_Report.objects.all().delete()
+
+
+def manage_notifications():
+    ### WATING FOR CLIENT ###
+    if not Host.objects.all().exists() and not Sys_Report.objects.filter(etype=reportInfo, description=reportNoHost).exists():
+        Sys_Report.objects.create(etype=reportInfo,description=reportNoHost, time=str(datetime.now()))
+    elif Host.objects.all().exists():
+        try:
+            Sys_Report.objects.filter(etype=reportInfo,description=reportNoHost).delete()
+        except:
+            pass
+
+    listHosts = list(Host.objects.all())
+    for hostObject in listHosts:
+        ### ADD A CHART TO MONITOR ###
+        if not Chart.objects.filter(host_object=hostObject).exists() and not Host_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).exists():
+            Host_Report.objects.create(host_object=hostObject, etype=reportInfo, description=reportNoChart, time=str(datetime.now()))
+        elif Chart.objects.filter(host_object=hostObject).exists():
+            try:
+                Host_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).delete()
+            except:
+                pass
+
+        lastConnection = Host_Data.objects.filter(host_object=hostObject).order_by('pk')[:1]
+        if lastConnection:
+            lastTimeConnection = datetime.strptime(lastConnection.time, '%Y-%m-%d %H:%M:%S.%f')
+            ### HOST LOG TIME WITHOUT CONNECTIONS ###
+            if (datetime.now() - lastConnection).minute >= longTimeConnection and not Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).exists():
+                Host_Report.objects.create(host_object=hostObject, etype=reportWarning, description=reportNoConnection, time=str(datetime.now()))
+            elif (datetime.now() - lastConnection).minute > longTimeConnection:
+                try:
+                    Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).delete()
+                except:
+                    pass
+
+        listCharts = Chart.objects.filter(host_object=hostObject)
+        for chartObject in listCharts:
+            ### NOT DATA TO EXIBI ###
+            if not Chart_Data.objects.filter(chart_object=chartObject).exists() and not Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).exists():
+                Chart_Report.objects.create(chart_object=chartObject, etype=reportInfo, description=reportNoChartData, time=str(datetime.now()))
+            elif Chart_Data.objects.filter(chart_object=chartObject).exists():
+                try:
+                    Chart_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).delete()
+                except:
+                    pass
+
+
+#def manage_host_notifications(hostObject)
+#    listCharts = Chart.objects.filter(host_object=hostObject)
+#
+#    ### ADD A CHART TO MONITOR ###
+#    if not Chat.objects.filter(host_object=hostObject).exists() and not Host_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).exists():
+#        Hist_Report.objects.create(host_object=hostObject, etype=reportInfo, description=reportNoChart, time=str(datetime.now()))
+#    else:
+#        try:
+#            Host_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).delete()
+#        except:
+#            pass
+
+
 def main():
     global serverPort
     if len(sys.argv) > 1:
         serverPort =  sys.argv[1]
 
     #TODO: Clear Char_Error and Host_Error every system restart ###
+    clear_all_notifications()
 
     zmqSocket = create_server()
 
+    manage_notifications()
     while True:
         #  Wait for next request from client
         recivedJson = zmqSocket.recv_json()  #socket zmq.REP will block on recv unless it has received a request.
@@ -195,6 +272,7 @@ def main():
 
         process_agent_request(zmqSocket, hostObject, decodedJson)
 
+        manage_notifications()
 
 if __name__ == "__main__":
     main()
