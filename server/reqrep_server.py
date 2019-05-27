@@ -25,6 +25,9 @@ reportNoHost ='Waiting for agent connection'
 reportNoChart = 'Please add a chart to start monitoring in this agent'
 reportNoConnection = 'This agent does not connect for a long time'
 reportNoChartData = 'No data to display'
+reportNoHostData = 'The agent are unable to provide monitored host data'
+reportNoCommand = 'Command is not supported'
+reportNoGNURadio = 'GNU-Radio is not running'
 
 def create_server():
     global serverPort
@@ -88,6 +91,13 @@ def save_host_data(hostObject, decodedJson):
         except:
             print("Errro tring to collect and save host data")
 
+        ### TO REMOVE NO HOST DATA ###
+        if Host_Data.objects.filter(host_object=hostObject).exists() and Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reporNoHostData).exists():
+            try:
+                Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoHostData).delete()
+            except:
+                pass
+
 
 def save_chart_data(hostObject, decodedJson):
     if 'new_data_list' in decodedJson:
@@ -102,6 +112,18 @@ def save_chart_data(hostObject, decodedJson):
                     if not rawValue == 'null': #IF IT IS NOT NULL SAVE DATA
                         data = Chart_Data.objects.create(chart_object=chartObject, time=str(datetime.now()), value=rawValue)
 
+                        ### TO REMOVE COMMAND NOT SUPPORTED ###
+                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reporNoCommand).exists():
+                            try:
+                                Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reportNoCommand).delete()
+                            except:
+                                pass
+                        ### TO REMOVE GNU-RADIO NOT RUNNING ###
+                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Chart_Report.objects.filter(chart_object=chartObject, etype=reportWarning, description=reporNoGNURadio).exists():
+                            try:
+                                Chart_Report.objects.filter(chart_object=chartObject, etype=reportWarning, description=reportNoGNURadio).delete()
+                            except:
+                                pass
 
 def replay_new_data(zmqSocket, hostObject, decodedJson):
     if 'new_data_list' in decodedJson:
@@ -214,6 +236,8 @@ def manage_notifications():
             except:
                 pass
 
+
+
 #        lastConnection = Host_Data.objects.filter(host_object=hostObject).order_by('time')[0]
 #        print (lastConnection.time)
 
@@ -239,6 +263,8 @@ def manage_notifications():
                     Chart_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChartData).delete()
                 except:
                     pass
+
+
 
 
 #def manage_host_notifications(hostObject)
