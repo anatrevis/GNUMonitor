@@ -12,7 +12,7 @@ import random
 serverPort = "5556"
 serverIp = "localhost"
 retryConnectionInterval = 3
-monitoringInterval = 5
+monitoringInterval = 1
 
 #### GLOBAL VARIABLES ####
 gnuRadioClient = None
