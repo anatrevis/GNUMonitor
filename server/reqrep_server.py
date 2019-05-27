@@ -159,7 +159,7 @@ def save_report(hostObject, decodedJson):
         rawReport = decodedJson['chart_report']
         rawReportDescription = rawReport['description']
         rawReportEtype = rawReport['etype']
-        rawCharId = rawReport['chart_id']
+        rawChartId = rawReport['chart_id']
         chartObject = Chart.objects.get(pk=rawChartId)
         if not Chart_Report.objects.filter(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype).exists():
             Chart_Report.objects.create(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
