@@ -224,12 +224,12 @@ def main():
             valuesList, idChartList = [], []
             for monitorChart in requestedChartList:
                 try:
-                    #collectedValue = eval("client.get_" + monitorChart["command_line"] + "()")
+                    collectedValue = eval("gnuRadioClient.get_" + monitorChart["command_line"] + "()")
                     #collectedValue = eval("client.get_" + "user_throughput()")
-                    collectedValue = random.randint(1, 100)
+                    #collectedValue = random.randint(1, 100)
                 except Exception as e:
                     ### REPORT ERROR TO SERVER ###
-                    #print(e.errno)
+                    print(e.errno)
                     if e.errno == 61:
                         host_report_to_server('Warning', 'GNU-Radio is not running')
                         break
