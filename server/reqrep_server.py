@@ -92,7 +92,7 @@ def save_host_data(hostObject, decodedJson):
             print("Errro tring to collect and save host data")
 
         ### TO REMOVE NO HOST DATA ###
-        if Host_Data.objects.filter(host_object=hostObject).exists() and Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reporNoHostData).exists():
+        if Host_Data.objects.filter(host_object=hostObject).exists() and Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoHostData).exists():
             try:
                 Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoHostData).delete()
             except:
@@ -113,15 +113,15 @@ def save_chart_data(hostObject, decodedJson):
                         data = Chart_Data.objects.create(chart_object=chartObject, time=str(datetime.now()), value=rawValue)
 
                         ### TO REMOVE COMMAND NOT SUPPORTED ###
-                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reporNoCommand).exists():
+                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reportNoCommand).exists():
                             try:
                                 Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reportNoCommand).delete()
                             except:
                                 pass
                         ### TO REMOVE GNU-RADIO NOT RUNNING ###
-                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Chart_Report.objects.filter(chart_object=chartObject, etype=reportWarning, description=reporNoGNURadio).exists():
+                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoGNURadio).exists():
                             try:
-                                Chart_Report.objects.filter(chart_object=chartObject, etype=reportWarning, description=reportNoGNURadio).delete()
+                                Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoGNURadio).delete()
                             except:
                                 pass
 
@@ -182,10 +182,12 @@ def save_report(hostObject, decodedJson):
         rawReportDescription = rawReport['description']
         rawReportEtype = rawReport['etype']
         rawChartId = rawReport['chart_id']
-        chartObject = Chart.objects.get(pk=rawChartId)
-        if not Chart_Report.objects.filter(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype).exists():
-            Chart_Report.objects.create(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
-
+        try:
+            chartObject = Chart.objects.get(pk=rawChartId)
+            if not Chart_Report.objects.filter(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype).exists():
+                Chart_Report.objects.create(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
+        except:
+            pass
 
 def replay_report(zmqSocket, hostObject):
     jsonResponseReport = json.dumps({
@@ -260,7 +262,7 @@ def manage_notifications():
                 Chart_Report.objects.create(chart_object=chartObject, etype=reportInfo, description=reportNoChartData, time=str(datetime.now()))
             elif Chart_Data.objects.filter(chart_object=chartObject).exists():
                 try:
-                    Chart_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChartData).delete()
+                    Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).delete()
                 except:
                     pass
 
