@@ -214,28 +214,28 @@ def manage_notifications():
             except:
                 pass
 
-        lastConnection = Host_Data.objects.filter(host_object=hostObject).order_by('pk')[:1]
-        if lastConnection:
-            lastTimeConnection = datetime.strptime(lastConnection.time, '%Y-%m-%d %H:%M:%S.%f')
-            ### HOST LOG TIME WITHOUT CONNECTIONS ###
-            if (datetime.now() - lastConnection).minute >= longTimeConnection and not Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).exists():
-                Host_Report.objects.create(host_object=hostObject, etype=reportWarning, description=reportNoConnection, time=str(datetime.now()))
-            elif (datetime.now() - lastConnection).minute > longTimeConnection:
-                try:
-                    Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).delete()
-                except:
-                    pass
+        # lastConnection = Host_Data.objects.filter(host_object=hostObject).order_by('pk')[:1]
+        # if lastConnection:
+        #     lastTimeConnection = datetime.strptime(lastConnection.time, '%Y-%m-%d %H:%M:%S.%f')
+        #     ### HOST LOG TIME WITHOUT CONNECTIONS ###
+        #     if (datetime.now() - lastConnection).minute >= longTimeConnection and not Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).exists():
+        #         Host_Report.objects.create(host_object=hostObject, etype=reportWarning, description=reportNoConnection, time=str(datetime.now()))
+        #     elif (datetime.now() - lastConnection).minute > longTimeConnection:
+        #         try:
+        #             Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).delete()
+        #         except:
+        #             pass
 
-        listCharts = Chart.objects.filter(host_object=hostObject)
-        for chartObject in listCharts:
-            ### NOT DATA TO EXIBI ###
-            if not Chart_Data.objects.filter(chart_object=chartObject).exists() and not Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).exists():
-                Chart_Report.objects.create(chart_object=chartObject, etype=reportInfo, description=reportNoChartData, time=str(datetime.now()))
-            elif Chart_Data.objects.filter(chart_object=chartObject).exists():
-                try:
-                    Chart_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).delete()
-                except:
-                    pass
+        # listCharts = Chart.objects.filter(host_object=hostObject)
+        # for chartObject in listCharts:
+        #     ### NOT DATA TO EXIBI ###
+        #     if not Chart_Data.objects.filter(chart_object=chartObject).exists() and not Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).exists():
+        #         Chart_Report.objects.create(chart_object=chartObject, etype=reportInfo, description=reportNoChartData, time=str(datetime.now()))
+        #     elif Chart_Data.objects.filter(chart_object=chartObject).exists():
+        #         try:
+        #             Chart_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).delete()
+        #         except:
+        #             pass
 
 
 #def manage_host_notifications(hostObject)

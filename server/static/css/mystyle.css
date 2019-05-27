@@ -144,3 +144,7 @@ td {
 .card_selected{
   background-color: #eee;
 }
+
+#monitoring_div{
+  margin-bottom: 15px;
+}

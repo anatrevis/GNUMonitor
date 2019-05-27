@@ -15,6 +15,7 @@ var list_charts_pk = [];
 var list_charts_title = [];
 var list_charts_xAxis_name = [];
 var list_charts_yAxis_name = [];
+var selected_ids= [];
 
 //var pk_selected_host = $( ".selected").attr('id');
 //console.log("PK SELECTED HOST:"+ pk_selected_host);
@@ -64,10 +65,10 @@ function Post_Charts(){ // Gets the registered charts informations
       data: {id_selected_host: id_selected_host},
       success: function(charts) {
 
-      console.log('enviei este id: '+id_selected_host);
+      // console.log('enviei este id: '+id_selected_host);
 
       selected_objects_chart_list = charts;
-      console.log(selected_objects_chart_list);
+      // console.log(selected_objects_chart_list);
 
       if (selected_objects_chart_list.length > 0 && id_last_chart == 0){
 
@@ -80,14 +81,16 @@ function Post_Charts(){ // Gets the registered charts informations
           list_charts_xAxis_name.push(selected_objects_chart_list[u]['xAxis_Name']);
           list_charts_yAxis_name.push(selected_objects_chart_list[u]['yAxis_Name']);
 
-          console.log('Chart div ID:' + list_charts_pk[u])
+          // console.log('Chart div ID:' + list_charts_pk[u])
           //Create Monitoring_Divs
           $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_"+list_charts_pk[u]+"' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_"+list_charts_pk[u]+"' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='chart_"+list_charts_pk[u]+"'  style='width:100%; height:400px;' > </div></div>");
 
           Monitor_Chart();
+
         }
 
       }
+      Charts_Reports();
 
   },
   failure: function(data) {
@@ -108,13 +111,10 @@ function Get_Chart_Data(){ //Gets GNU Radio monitoring data
         data_list = data;
         // console.log(data);
 
-        if (data_list.length > 0){
-          id_last_item = data_list[(data_list.length) - 1]['id'];
-        }
-
         for (i=0; i<objects_chart_list.length;i++){
-           var chart_data = data_list.filter(function(p){return p.chart_object_id == list_charts_pk[i];});
-           Plot_Chart(chart_data, objects_chart_list[i]);
+           var chart_data = data_list.filter(function(p){
+             return p.chart_object_id == list_charts_pk[i];});
+            Plot_Chart(chart_data, objects_chart_list[i]);
          }
       },
       failure: function(data) {
@@ -127,7 +127,8 @@ function Plot_Chart(chart_data, object_chart){
 
   for (var i = 0; i < chart_data.length; i++){
     //Controle do last id pra nao bugar o monitoramento
-    // console.log(chart_data[i]['value']);
+
+    // console.log(chart_data[i]);
     if (id_last_item < chart_data[i]['id']){
       id_last_item = chart_data[i]['id'];
     }
@@ -141,91 +142,133 @@ function Plot_Chart(chart_data, object_chart){
 };
 
 
-function System_Errors() {
+function Charts_Reports() {
   $.ajax({
-      url: "/gnumonitor/create_errors_list/",
+      url: "/gnumonitor/charts_notifications/",
       type: 'GET',
       dataType: 'json',
-      // data: {id_last_error: id_last_error},
-      success: function(errors) {
-          errorslist = errors;
-          // console.log(errorslist);
-          var enable_btn = errorslist.filter(function(p){return p.description == "Warning: No client connection";});
-          //console.log(enable_btn);
-          if (enable_btn !== 'undefined' && enable_btn.length == 0){
-            //console.log("TEM CONEXAO COM O CLIENTE");
-            $("#add_monitoring").removeClass("nav-link disabled").addClass("nav-link");
+      data: {id_selected_host: id_selected_host},
+      success: function(charts_notes) {
+        // REMOVER TODAS DIV
+        $("#errors_div").remove();
+        console.log('NOTES:'+charts_notes);
 
+        if (charts_notes.length > 0){
+          if(!$("#errors_div").length){
+            $("#notifications").append("<div id='errors_div'></div>")
           }
 
-          if (errorslist.length > 0){
-            if(!$("#errors_div").length){
-              $("#notifications").append("<div id='errors_div'></div>");
-                // $("#notifications").prepend("<div class='col' id='errors_div'></div>");
+          for(var t=0; t< charts_notes.length; t++){
+            console.log(charts_notes[t]['etype']);
+            if(charts_notes[t]['etype']== 'Warning'){
+              $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+charts_notes[t]['id']+" >"+charts_notes[t]['description']+"</div>");
             }
 
-            var new_ids = [];
-            //ADD NEW ERRORS
-            for (i=0; i<errorslist.length;i++){
-            //for (var error in errorslist ) {
-              //console.log(errorslist[i]['id']);
-              new_ids.push(errorslist[i]['id']);
-              if(!$('#'+errorslist[i]['id']).length){
-                //console.log("Nao Existe");
-                //$("#errors_reports").append("<p id="+errorslist[i]['id']+" >"+errorslist[i]['chart_object_id']+" "+errorslist[i]['description']+"</p>");
-                if(errorslist[i]['type']=="Error"){
-                  $("#errors_div").append("<div class='alert alert-danger' role='alert' id="+errorslist[i]['id']+" >"+errorslist[i]['description']+"</div>");
-                }
-
-                else{
-                  $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+errorslist[i]['id']+" >"+errorslist[i]['description']+"</div>");
-                }
-
-              }
+            else if(charts_notes[t]['etype']== 'Error'){
+              $("#errors_div").append("<div class='alert alert-danger' role='alert' id="+charts_notes[t]['id']+" >"+charts_notes[t]['description']+"</div>");
             }
-            //REMOVE SOLVED ERRORS
-            var old_ids = [];
-            var solved_errors = [];
 
-            $("#errors_div").find("div").each(function(){
-              if(this.id>0){
-                old_ids.push(this.id);
-                // console.log('ID:' +this.id);
-                var contem = 0;
-                for (i=0; i<new_ids.length;i++){//se new_ids nao contem this.id entao faz
-                  //console.log("compara: "+new_ids[i]+ " com"+this.id);
-                  if (parseInt(new_ids[i]) == parseInt(this.id)){
-                    //console.log("deu igual")
-                    contem = 1;
-                    break;
-                  }
-                }
-                if(contem == 0){
-                  //console.log("deu DIFERENTE "+ this.id)
-                  $('#'+this.id).remove();
-                  solved_errors.push(this.id)
-                }
-              }
-            });
-            //console.log('Old:' +old_ids);
-            //console.log('New:' +new_ids);
-            //console.log('Solved:' +solved_errors);
-
-
-
-
-          } else {
-            if($("#errors_div").length){
-                $("#errors_div").remove();
+            else if(charts_notes[t]['etype']== 'Info'){
+              $("#errors_div").append("<div class='alert alert-primary' role='alert' id="+charts_notes[t]['id']+" >"+charts_notes[t]['description']+"</div>");
             }
+
+            else if(charts_notes[t]['etype']== 'Success'){
+              $("#errors_div").append("<div class='alert alert-success' role='alert' id="+charts_notes[t]['id']+" >"+charts_notes[t]['description']+"</div>");
+            }
+            // INSERIR NOVA DIV
           }
-
+        }
+        //     $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+charts_notes[i]['id']+" >"+charts_notes[i]['description']+"</div>");
+        //   }
+        // }
+        //
+        // else {
+        //   if($("#errors_div").length){
+        //       $("#errors_div").remove();
+        //   }
+        // }
       },
       failure: function(errors) {
           alert('Got an error dude');
       }
     });
 };
+
+
+// function Charts_Reports() {
+//   $.ajax({
+//       url: "/gnumonitor/charts_notifications/",
+//       type: 'GET',
+//       dataType: 'json',
+//       success: function(charts_notes) {
+//           // var enable_btn = errorslist.filter(function(p){return p.description == "Warning: No client connection";});
+//           // if (enable_btn !== 'undefined' && enable_btn.length == 0){
+//           //   $("#add_monitoring").removeClass("nav-link disabled").addClass("nav-link");
+//           // }
+//           console.log(charts_notes)
+//           if (charts_notes.length > 0){
+//             if(!$("#errors_div").length){
+//               $("#notifications").append("<div id='errors_div'></div>");
+//                 // $("#notifications").prepend("<div class='col' id='errors_div'></div>");
+//             }
+//
+//             var new_ids = [];
+//             //ADD NEW ERRORS
+//             for (i=0; i<charts_notes.length;i++){
+//             //for (var error in errorslist ) {
+//               //console.log(errorslist[i]['id']);
+//               new_ids.push(charts_notes[i]['id']);
+//               if(!$('#'+charts_notes[i]['id']).length){
+//                 //console.log("Nao Existe");
+//                 //$("#errors_reports").append("<p id="+errorslist[i]['id']+" >"+errorslist[i]['chart_object_id']+" "+errorslist[i]['description']+"</p>");
+//                 if(charts_notes[i]['etype']=="Error"){
+//                   $("#errors_div").append("<div class='alert alert-danger' role='alert' id="+charts_notes[i]['id']+" >"+charts_notes[i]['description']+"</div>");
+//                 }
+//
+//                 else{
+//                   $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+charts_notes[i]['id']+" >"+charts_notes[i]['description']+"</div>");
+//                 }
+//
+//               }
+//             }
+//             //REMOVE SOLVED ERRORS
+//             var old_ids = [];
+//             var solved_errors = [];
+//
+//             $("#errors_div").find("div").each(function(){
+//               if(this.id>0){
+//                 old_ids.push(this.id);
+//                 // console.log('ID:' +this.id);
+//                 var contem = 0;
+//                 for (i=0; i<new_ids.length;i++){//se new_ids nao contem this.id entao faz
+//                   //console.log("compara: "+new_ids[i]+ " com"+this.id);
+//                   if (parseInt(new_ids[i]) == parseInt(this.id)){
+//                     //console.log("deu igual")
+//                     contem = 1;
+//                     break;
+//                   }
+//                 }
+//                 if(contem == 0){
+//                   //console.log("deu DIFERENTE "+ this.id)
+//                   $('#'+this.id).remove();
+//                   solved_errors.push(this.id)
+//                 }
+//               }
+//             });
+//
+//
+//           } else {
+//             if($("#errors_div").length){
+//                 $("#errors_div").remove();
+//             }
+//           }
+//
+//       },
+//       failure: function(errors) {
+//           alert('Got an error dude');
+//       }
+//     });
+// };
 
 function Destroy_Chart() {
   var btn = (event.target);
@@ -297,25 +340,24 @@ function Grid_List(){
 
 function Select_Card(){
   var clicked = (event.target);
-  console.log(clicked.id);
+  // console.log(clicked.id);
   if(clicked.id != ''){
     for(z=0; z<list_hosts_pk.length; z++){
-      console.log("deixa todos os cards brancos");
+      // console.log("deixa todos os cards brancos");
       $("."+list_hosts_pk[z]+"").removeClass("card_selected");
-      console.log("deixa o card clicado cinza");
-      $("."+clicked.id+"").addClass("card_selected");
-      id_selected_host= clicked.id;
-      id_last_chart=0;
-      list_charts_pk = [];
-      list_charts_title = [];
-      list_charts_xAxis_name = [];
-      list_charts_yAxis_name = [];
-      objects_chart_list = [];
       $(".monitoring_div").remove();
-
     }
-
-  console.log("MUDOU O ID NO CLICK!!"+id_selected_host);
+  // console.log("deixa o card clicado cinza");
+  $("."+clicked.id+"").addClass("card_selected");
+  id_selected_host= clicked.id;
+  id_last_chart=0;
+  id_last_item = 0;
+  list_charts_pk = [];
+  list_charts_title = [];
+  list_charts_xAxis_name = [];
+  list_charts_yAxis_name = [];
+  objects_chart_list = [];
+  // console.log("MUDOU O ID NO CLICK!!"+id_selected_host);
   }
 
 };
@@ -326,6 +368,7 @@ $(document).ready(function(){
     Post_Charts();
     Get_Chart_Data();
     // System_Errors();
+    //Charts_Reports();
 
   }, 1000);
 });
