@@ -229,8 +229,8 @@ def main():
                     #collectedValue = random.randint(1, 100)
                 except Exception as e:
                     ### REPORT ERROR TO SERVER ###
-                    print(e.errno)
-                    if e.errno == 61:
+                    #print(e.errno)
+                    if "Connection refused" in str(e):
                         host_report_to_server('Warning', 'GNU-Radio is not running')
                         break
                     else:
