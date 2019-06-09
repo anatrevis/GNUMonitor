@@ -218,21 +218,24 @@ def main():
                 diskPercent = psutil.disk_usage('/')[3]
             except:
                 ### REPORT ERROR TO SERVER ###
-                host_report_to_server('Warning', 'The agent are unable to provide monitored host data.')
+                host_report_to_server('Warning', 'The agent are unable to provide monitored host data')
 
             ### COLLECT GNURADIO DATA ###
             valuesList, idChartList = [], []
             for monitorChart in requestedChartList:
                 try:
-                    #collectedValue = eval("client.get_" + monitorChart["command_line"] + "()")
+                    collectedValue = eval("gnuRadioClient.get_" + monitorChart["command_line"] + "()")
                     #collectedValue = eval("client.get_" + "user_throughput()")
-                    collectedValue = random.randint(1, 100)
+                    #collectedValue = random.randint(1, 100)
                 except Exception as e:
                     ### REPORT ERROR TO SERVER ###
                     #print(e.errno)
-                    if e.errno == 61:
+                    if "Connection refused" in str(e):
                         host_report_to_server('Warning', 'GNU-Radio is not running')
                         break
+                    elif "is not supported" in str(e):
+                        chart_report_to_server(monitorChart["chart_id"],'Error', "Command is not supported")
+                        collectedValue = 'null' #JUST TO NOT BROKE THE DATA AND CHART ID LIST ORDER
                     else:
                         chart_report_to_server(monitorChart["chart_id"],'Error', str(e))
                         collectedValue = 'null' #JUST TO NOT BROKE THE DATA AND CHART ID LIST ORDER

@@ -25,6 +25,9 @@ reportNoHost ='Waiting for agent connection'
 reportNoChart = 'Please add a chart to start monitoring in this agent'
 reportNoConnection = 'This agent does not connect for a long time'
 reportNoChartData = 'No data to display'
+reportNoHostData = 'The agent are unable to provide monitored host data'
+reportNoCommand = 'Command is not supported'
+reportNoGNURadio = 'GNU-Radio is not running'
 
 def create_server():
     global serverPort
@@ -88,6 +91,13 @@ def save_host_data(hostObject, decodedJson):
         except:
             print("Errro tring to collect and save host data")
 
+        ### TO REMOVE NO HOST DATA ###
+        if Host_Data.objects.filter(host_object=hostObject).exists() and Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoHostData).exists():
+            try:
+                Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoHostData).delete()
+            except:
+                pass
+
 
 def save_chart_data(hostObject, decodedJson):
     if 'new_data_list' in decodedJson:
@@ -102,6 +112,18 @@ def save_chart_data(hostObject, decodedJson):
                     if not rawValue == 'null': #IF IT IS NOT NULL SAVE DATA
                         data = Chart_Data.objects.create(chart_object=chartObject, time=str(datetime.now()), value=rawValue)
 
+                        ### TO REMOVE COMMAND NOT SUPPORTED ###
+                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reportNoCommand).exists():
+                            try:
+                                Chart_Report.objects.filter(chart_object=chartObject, etype=reportError, description=reportNoCommand).delete()
+                            except:
+                                pass
+                        ### TO REMOVE GNU-RADIO NOT RUNNING ###
+                        if Chart_Data.objects.filter(chart_object=chartObject).exists() and Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoGNURadio).exists():
+                            try:
+                                Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoGNURadio).delete()
+                            except:
+                                pass
 
 def replay_new_data(zmqSocket, hostObject, decodedJson):
     if 'new_data_list' in decodedJson:
@@ -154,16 +176,18 @@ def save_report(hostObject, decodedJson):
         rawReportDescription = rawReport['description']
         rawReportEtype = rawReport['etype']
         if not Host_Report.objects.filter(host_object=hostObject,description=rawReportDescription,etype=rawReportEtype).exists():
-            Host_Report.objects.create(description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
+            Host_Report.objects.create(host_object=hostObject, description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
     elif "chart_report" in decodedJson:
         rawReport = decodedJson['chart_report']
         rawReportDescription = rawReport['description']
         rawReportEtype = rawReport['etype']
-        rawCharId = rawReport['chart_id']
-        chartObject = Chart.objects.get(pk=rawChartId)
-        if not Chart_Report.objects.filter(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype).exists():
-            Chart_Report.objects.create(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
-
+        rawChartId = rawReport['chart_id']
+        try:
+            chartObject = Chart.objects.get(pk=rawChartId)
+            if not Chart_Report.objects.filter(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype).exists():
+                Chart_Report.objects.create(chart_object=chartObject,description=rawReportDescription,etype=rawReportEtype,time=str(datetime.now()))
+        except:
+            pass
 
 def replay_report(zmqSocket, hostObject):
     jsonResponseReport = json.dumps({
@@ -214,28 +238,35 @@ def manage_notifications():
             except:
                 pass
 
-        # lastConnection = Host_Data.objects.filter(host_object=hostObject).order_by('pk')[:1]
-        # if lastConnection:
-        #     lastTimeConnection = datetime.strptime(lastConnection.time, '%Y-%m-%d %H:%M:%S.%f')
-        #     ### HOST LOG TIME WITHOUT CONNECTIONS ###
-        #     if (datetime.now() - lastConnection).minute >= longTimeConnection and not Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).exists():
-        #         Host_Report.objects.create(host_object=hostObject, etype=reportWarning, description=reportNoConnection, time=str(datetime.now()))
-        #     elif (datetime.now() - lastConnection).minute > longTimeConnection:
-        #         try:
-        #             Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).delete()
-        #         except:
-        #             pass
 
-        # listCharts = Chart.objects.filter(host_object=hostObject)
-        # for chartObject in listCharts:
-        #     ### NOT DATA TO EXIBI ###
-        #     if not Chart_Data.objects.filter(chart_object=chartObject).exists() and not Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).exists():
-        #         Chart_Report.objects.create(chart_object=chartObject, etype=reportInfo, description=reportNoChartData, time=str(datetime.now()))
-        #     elif Chart_Data.objects.filter(chart_object=chartObject).exists():
-        #         try:
-        #             Chart_Report.objects.filter(host_object=hostObject, etype=reportInfo, description=reportNoChart).delete()
-        #         except:
-        #             pass
+
+#        lastConnection = Host_Data.objects.filter(host_object=hostObject).order_by('time')[0]
+#        print (lastConnection.time)
+
+#        if lastConnection:
+#            lastTimeConnection = datetime.strptime(str(lastConnection.time).split('+')[0], '%Y-%m-%d %H:%M:%S.%f')
+            ### HOST LOG TIME WITHOUT CONNECTIONS ###
+#            print(datetime.now() - lastTimeConnection)
+#            if (datetime.now() - lastTimeConnection).minute >= longTimeConnection and not Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).exists():
+#                Host_Report.objects.create(host_object=hostObject, etype=reportWarning, description=reportNoConnection, time=str(datetime.now()))
+#            elif (datetime.now() - lastTimeConnection).minute > longTimeConnection:
+#                try:
+#                    Host_Report.objects.filter(host_object=hostObject, etype=reportWarning, description=reportNoConnection).delete()
+#                except:
+#                    pass
+
+        listCharts = Chart.objects.filter(host_object=hostObject)
+        for chartObject in listCharts:
+            ### NOT DATA TO EXIBI ###
+            if not Chart_Data.objects.filter(chart_object=chartObject).exists() and not Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).exists():
+                Chart_Report.objects.create(chart_object=chartObject, etype=reportInfo, description=reportNoChartData, time=str(datetime.now()))
+            elif Chart_Data.objects.filter(chart_object=chartObject).exists():
+                try:
+                    Chart_Report.objects.filter(chart_object=chartObject, etype=reportInfo, description=reportNoChartData).delete()
+                except:
+                    pass
+
+
 
 
 #def manage_host_notifications(hostObject)
