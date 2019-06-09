@@ -16,6 +16,8 @@ var list_charts_title = [];
 var list_charts_xAxis_name = [];
 var list_charts_yAxis_name = [];
 var selected_ids= [];
+//Get_Hosts_Data() variables
+var id_last_host_data = 0;
 
 //var pk_selected_host = $( ".selected").attr('id');
 //console.log("PK SELECTED HOST:"+ pk_selected_host);
@@ -40,15 +42,48 @@ function Post_Hosts(){ // Gets host informations, creates side bar cards for VM'
           list_hosts_name.push(objects_host_list[x]['name']);
           list_hosts_ip.push(objects_host_list[x]['ip']);
 
+          // $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id='row_"+list_hosts_pk[x]+"'><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div></div>");
           $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id="+list_hosts_pk[x]+"><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div><div class='col-xs'id="+list_hosts_pk[x]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[x]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[x]+"><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+list_hosts_pk[x]+">CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id="+list_hosts_pk[x]+">RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id="+list_hosts_pk[x]+" >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div></div>");
+
         }
 
         $("."+list_hosts_pk[0]+"").addClass("card_selected");//Fist VM start selected
         id_selected_host = list_hosts_pk[0];
         // console.log(id_selected_host);
 
-        Host_Monitor_Chart();//Plots monitoring charts for VM's (CPU, RAM, DISK)
+        Host_Reports();
+
       }
+  },
+  failure: function(data) {
+      alert('Error in Post_Hosts');
+  }
+  });
+};
+
+function Get_Hosts_Data(){ // Gets host informations, creates side bar cards for VM's connected
+  $.ajax({
+      url: "/gnumonitor/hosts_data",
+      type: 'GET',
+      dataType: 'json',
+      data: {id_last_host_data: id_last_host_data},
+      success: function(hosts_data) {
+
+        hosts_data_list = hosts_data;
+
+        if (hosts_data_list.length > 0){
+           id_last_host_data = hosts_data_list[(hosts_data_list.length) - 1]['id'];
+           if(objects_host_list.length>0){
+             // for(d=0; d<objects_host_list.length; d++){
+             //   $("#row_"+hosts_data_list[d]['host_object_id']).append("<div class='col-xs'id="+hosts_data_list[d]['host_object_id']+"><p class='side_bar_card_last_time' id="+hosts_data[d]['host_object_id']+">"+hosts_data[d]['time']+"</p></div></div><div class='row' id="+hosts_data[d]['host_object_id']+"><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+hosts_data[d]['host_object_id']+">CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id="+hosts_data[d]['host_object_id']+">RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id="+hosts_data[d]['host_object_id']+" >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div>")
+             // }
+           }
+
+           Host_Monitor_Chart();//Plots monitoring charts for VM's (CPU, RAM, DISK)
+
+        }
+
+
   },
   failure: function(data) {
       alert('Error in Post_Hosts');
@@ -151,15 +186,15 @@ function Charts_Reports() {
       success: function(charts_notes) {
         // REMOVER TODAS DIV
         $("#errors_div").remove();
-        console.log('NOTES:'+charts_notes);
+        // console.log('NOTES:'+charts_notes);
 
         if (charts_notes.length > 0){
           if(!$("#errors_div").length){
-            $("#notifications").append("<div id='errors_div'></div>")
+            $("#dash_notifications").append("<div id='errors_div'></div>")
           }
 
           for(var t=0; t< charts_notes.length; t++){
-            console.log(charts_notes[t]['etype']);
+            // console.log(charts_notes[t]['etype']);
             if(charts_notes[t]['etype']== 'Warning'){
               $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+charts_notes[t]['id']+" >"+charts_notes[t]['description']+"</div>");
             }
@@ -175,18 +210,9 @@ function Charts_Reports() {
             else if(charts_notes[t]['etype']== 'Success'){
               $("#errors_div").append("<div class='alert alert-success' role='alert' id="+charts_notes[t]['id']+" >"+charts_notes[t]['description']+"</div>");
             }
-            // INSERIR NOVA DIV
           }
         }
-        //     $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+charts_notes[i]['id']+" >"+charts_notes[i]['description']+"</div>");
-        //   }
-        // }
-        //
-        // else {
-        //   if($("#errors_div").length){
-        //       $("#errors_div").remove();
-        //   }
-        // }
+
       },
       failure: function(errors) {
           alert('Got an error dude');
@@ -194,81 +220,91 @@ function Charts_Reports() {
     });
 };
 
+function Host_Reports() {
+  $.ajax({
+      url: "/gnumonitor/hosts_notifications/",
+      type: 'GET',
+      dataType: 'json',
+      data: {id_selected_host: id_selected_host},
+      success: function(hosts_notes) {
+        // REMOVER TODAS DIV
+        console.log('ENTROU');
+        console.log(id_selected_host);
+        $("#host_errors_div").remove();
+        console.log('NOTES:'+hosts_notes);
 
-// function Charts_Reports() {
-//   $.ajax({
-//       url: "/gnumonitor/charts_notifications/",
-//       type: 'GET',
-//       dataType: 'json',
-//       success: function(charts_notes) {
-//           // var enable_btn = errorslist.filter(function(p){return p.description == "Warning: No client connection";});
-//           // if (enable_btn !== 'undefined' && enable_btn.length == 0){
-//           //   $("#add_monitoring").removeClass("nav-link disabled").addClass("nav-link");
-//           // }
-//           console.log(charts_notes)
-//           if (charts_notes.length > 0){
-//             if(!$("#errors_div").length){
-//               $("#notifications").append("<div id='errors_div'></div>");
-//                 // $("#notifications").prepend("<div class='col' id='errors_div'></div>");
-//             }
-//
-//             var new_ids = [];
-//             //ADD NEW ERRORS
-//             for (i=0; i<charts_notes.length;i++){
-//             //for (var error in errorslist ) {
-//               //console.log(errorslist[i]['id']);
-//               new_ids.push(charts_notes[i]['id']);
-//               if(!$('#'+charts_notes[i]['id']).length){
-//                 //console.log("Nao Existe");
-//                 //$("#errors_reports").append("<p id="+errorslist[i]['id']+" >"+errorslist[i]['chart_object_id']+" "+errorslist[i]['description']+"</p>");
-//                 if(charts_notes[i]['etype']=="Error"){
-//                   $("#errors_div").append("<div class='alert alert-danger' role='alert' id="+charts_notes[i]['id']+" >"+charts_notes[i]['description']+"</div>");
-//                 }
-//
-//                 else{
-//                   $("#errors_div").append("<div class='alert alert-warning' role='alert' id="+charts_notes[i]['id']+" >"+charts_notes[i]['description']+"</div>");
-//                 }
-//
-//               }
-//             }
-//             //REMOVE SOLVED ERRORS
-//             var old_ids = [];
-//             var solved_errors = [];
-//
-//             $("#errors_div").find("div").each(function(){
-//               if(this.id>0){
-//                 old_ids.push(this.id);
-//                 // console.log('ID:' +this.id);
-//                 var contem = 0;
-//                 for (i=0; i<new_ids.length;i++){//se new_ids nao contem this.id entao faz
-//                   //console.log("compara: "+new_ids[i]+ " com"+this.id);
-//                   if (parseInt(new_ids[i]) == parseInt(this.id)){
-//                     //console.log("deu igual")
-//                     contem = 1;
-//                     break;
-//                   }
-//                 }
-//                 if(contem == 0){
-//                   //console.log("deu DIFERENTE "+ this.id)
-//                   $('#'+this.id).remove();
-//                   solved_errors.push(this.id)
-//                 }
-//               }
-//             });
-//
-//
-//           } else {
-//             if($("#errors_div").length){
-//                 $("#errors_div").remove();
-//             }
-//           }
-//
-//       },
-//       failure: function(errors) {
-//           alert('Got an error dude');
-//       }
-//     });
-// };
+        if (hosts_notes.length > 0){
+          if(!$("#host_errors_div").length){
+            $("#dash_notifications").prepend("<div id='host_errors_div'></div>")
+          }
+
+          for(var t=0; t< hosts_notes.length; t++){
+            // console.log(charts_notes[t]['etype']);
+            if(hosts_notes[t]['etype']== 'Warning'){
+              $("#host_errors_div").append("<div class='alert alert-warning' role='alert' id="+hosts_notes[t]['id']+" >"+hosts_notes[t]['description']+"</div>");
+            }
+
+            else if(hosts_notes[t]['etype']== 'Error'){
+              $("#host_errors_div").append("<div class='alert alert-danger' role='alert' id="+hosts_notes[t]['id']+" >"+hosts_notes[t]['description']+"</div>");
+            }
+
+            else if(hosts_notes[t]['etype']== 'Info'){
+              $("#host_errors_div").append("<div class='alert alert-primary' role='alert' id="+hosts_notes[t]['id']+" >"+hosts_notes[t]['description']+"</div>");
+            }
+
+            else if(hosts_notes[t]['etype']== 'Success'){
+              $("#host_errors_div").append("<div class='alert alert-success' role='alert' id="+hosts_notes[t]['id']+" >"+hosts_notes[t]['description']+"</div>");
+            }
+          }
+        }
+
+      },
+      failure: function(errors) {
+          alert('Got an error dude');
+      }
+    });
+};
+
+function Sys_Reports() {
+  $.ajax({
+      url: "/gnumonitor/sys_notifications/",
+      type: 'GET',
+      dataType: 'json',
+      success: function(sys_notes) {
+        // REMOVER TODAS DIV
+        $("#side_errors_div").remove();
+
+        if (sys_notes.length > 0){
+          if(!$("#side_errors_div").length){
+            $("#side_notifications").append("<div id='side_errors_div'></div>")
+          }
+
+          for(var t=0; t< sys_notes.length; t++){
+            // console.log(charts_notes[t]['etype']);
+            if(sys_notes[t]['etype']== 'Warning'){
+              $("#side_errors_div").append("<div class='alert alert-warning' role='alert' id="+sys_notes[t]['id']+" >"+sys_notes[t]['description']+"</div>");
+            }
+
+            else if(sys_notes[t]['etype']== 'Error'){
+              $("#side_errors_div").append("<div class='alert alert-danger' role='alert' id="+sys_notes[t]['id']+" >"+sys_notes[t]['description']+"</div>");
+            }
+
+            else if(sys_notes[t]['etype']== 'Info'){
+              $("#side_errors_div").append("<div class='alert alert-primary' role='alert' id="+sys_notes[t]['id']+" >"+sys_notes[t]['description']+"</div>");
+            }
+
+            else if(sys_notes[t]['etype']== 'Success'){
+              $("#side_errors_div").append("<div class='alert alert-success' role='alert' id="+sys_notes[t]['id']+" >"+sys_notes[t]['description']+"</div>");
+            }
+          }
+        }
+
+      },
+      failure: function(){
+          console.log('Got an error dude');
+      }
+    });
+};
 
 function Destroy_Chart() {
   var btn = (event.target);
@@ -357,7 +393,8 @@ function Select_Card(){
   list_charts_xAxis_name = [];
   list_charts_yAxis_name = [];
   objects_chart_list = [];
-  // console.log("MUDOU O ID NO CLICK!!"+id_selected_host);
+  console.log("MUDOU O ID NO CLICK!!"+id_selected_host);
+  Host_Reports();
   }
 
 };
@@ -367,8 +404,8 @@ $(document).ready(function(){
     Post_Hosts();
     Post_Charts();
     Get_Chart_Data();
-    // System_Errors();
-    //Charts_Reports();
+    Get_Hosts_Data();
+    Sys_Reports();
 
   }, 1000);
 });

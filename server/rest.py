@@ -25,12 +25,15 @@ class RestFunctions(object):
                 hostObject = Host.objects.get(pk=id_selected_host)
             return JsonResponse(hosts, safe=False)
 
+    def Monitoring_Hosts_Data (request):
+        if request.method == "GET":
+            id_last_host_data = request.GET["id_last_host_data"]
+            hosts_data=(list(Host_Data.objects.filter(id__gt=id_last_host_data).order_by("time").values()))
+            return JsonResponse(hosts_data, safe=False)
+
     def Monitoring_Charts (request):
         global hostObject
         if request.method == "GET":
-            #id_last_chart = request.GET.get("id_last_chart")
-            # id_selected_host = request.GET[]"id_selected_host")
-            # id_last_chart = request.GET["id_last_chart"]
             id_selected_host = request.GET["id_selected_host"]
             charts = []
             if int(id_selected_host) > 0:
@@ -40,9 +43,7 @@ class RestFunctions(object):
 
 
     def Monitoring_Data(request):
-
         if request.method == "GET":
-            #data = list(Data_Chart.objects.order_by("time").values())
             id_last_item = request.GET["id_last_item"]
             data = []
             charts_list = list(Chart.objects.filter(host_object=hostObject))
@@ -56,8 +57,6 @@ class RestFunctions(object):
                         data.extend(list(Chart_Data.objects.filter(id__gt=last_id_to_get, chart_object=chart_object).order_by("time").values()))
                     else:
                         data.extend(list(Chart_Data.objects.filter(id__gt=id_last_item, chart_object=chart_object).order_by("time").values()))
-
-            #return HttpResponse(id_last_item)
             return JsonResponse(data, safe=False)
 
     def delete_chart(request):
@@ -66,8 +65,6 @@ class RestFunctions(object):
             Chart_Data.objects.filter(chart_object_id=chart_pk_to_destroy).delete();
             Chart_Report.objects.filter(chart_object_id=chart_pk_to_destroy).delete();
             Chart.objects.filter(pk=chart_pk_to_destroy).delete();
-    #         #tag_to_delete = get_object_or_404(Tag, title=tag)
-    #         #tag_to_delete.delete()
         return HttpResponse(chart_pk_to_destroy)
 
 
@@ -76,12 +73,28 @@ class RestFunctions(object):
         if request.method == "GET":
             id_selected_host = request.GET["id_selected_host"]
             charts_notes = []
-            charts_notes.extend(list(Sys_Report.objects.all().order_by("time").values()))
             if int(id_selected_host) > 0:
                 hostObject = Host.objects.get(pk=id_selected_host)
                 charts = Chart.objects.filter(host_object=hostObject).order_by('pk')
-                charts_notes.extend(list(Host_Report.objects.filter(host_object=hostObject).order_by("time").values()))
                 for chart in charts:
                     charts_notes.extend(list(Chart_Report.objects.filter(chart_object=chart).order_by("time").values()))
 
             return JsonResponse(charts_notes, safe=False)
+
+    def Hosts_Notifications(request):
+        global hostObject
+        if request.method == "GET":
+            id_selected_host = request.GET["id_selected_host"]
+            hosts_notes = []
+            if int(id_selected_host) > 0:
+                 hostObject = Host.objects.get(pk=id_selected_host)
+                 hosts_notes.extend(list(Host_Report.objects.filter(host_object=hostObject).order_by("time").values()))
+
+            return JsonResponse(hosts_notes, safe=False)
+
+    def Sys_Notifications(request):
+        global hostObject
+        if request.method == "GET":
+            sys_notes = []
+            sys_notes.extend(list(Sys_Report.objects.all().order_by("time").values()))
+        return JsonResponse(sys_notes, safe=False)
