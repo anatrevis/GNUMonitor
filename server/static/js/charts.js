@@ -1,4 +1,7 @@
 var objects_chart_list = [];
+var objects_host_CPU_list = [];
+var objects_host_RAM_list = [];
+var objects_host_DISK_list = [];
 
 function Monitor_Chart(){
   if (list_charts_pk.length > 0){
@@ -63,153 +66,237 @@ function Monitor_Chart(){
   };
 };
 
-function Host_Monitor_Chart() {
-    /**
-   * Create a constructor for sparklines that takes some sensible defaults and merges in the individual
-   * chart options. This function is also available from the jQuery plugin as $(element).highcharts('SparkLine').
-   */
-  Highcharts.SparkLine = function (a, b, c) {
-      var hasRenderToArg = typeof a === 'string' || a.nodeName,
-          options = arguments[hasRenderToArg ? 1 : 0],
-          defaultOptions = {
-              chart: {
-                  renderTo: (options.chart && options.chart.renderTo) || this,
-                  backgroundColor: null,
-                  borderWidth: 0,
-                  type: 'area',
-                  margin: [2, 0, 2, 0],
-                  width: 90,
-                  height: 50,
-                  style: {
-                      overflow: 'visible'
-                  },
 
-                  // small optimalization, saves 1-2 ms each sparkline
-                  skipClone: true
-              },
-              title: {
-                  text: ''
-              },
-              credits: {
+
+function Host_Monitor_Chart(){
+
+  console.log("PLOTADO");
+  if (list_hosts_pk.length > 0){
+    for (var b=0; b<list_hosts_pk.length; b++) {
+      var div_id = list_hosts_pk[b];
+
+      objects_host_CPU_list[b]= Highcharts.chart({
+      chart: {
+          backgroundColor: '#eee',
+          renderTo: String('CPU_'+div_id),
+          borderWidth: 0,
+          type: 'area',
+          height: 70,
+          margin: [0, 0, 0, 0],
+          style: {
+            overflow: 'visible'
+          },
+
+      },
+      legend: {
+        enabled: false,
+      },
+      title: {
+          text: ''
+      },
+      subtitle: {
+          text: ''
+      },
+      exporting: {
+        enabled: false
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        title: {
+            enabled: false
+        },
+        labels: {
+            enabled: false
+        },
+        tickLength: 0,
+        startOnTick: false,
+        endOnTick: false,
+        tickPositions: []
+      },
+      yAxis: {
+        title: {
+            enabled: false
+        },
+        labels: {
+            enabled: false
+        },
+        tickLength: 0,
+        gridLineWidth: 0,
+        endOnTick: false,
+        startOnTick: false,
+        tickPositions: [0],
+        min: 0,
+        max: 110,
+      },
+      tooltip: {
+        hideDelay: 0,
+        outside: true,
+        shared: true
+      },
+      plotOptions: {
+          area: {
+              pointStart: 1940,
+              marker: {
                   enabled: false
-              },
-              exporting: {
-                enabled: false
-              },
-              xAxis: {
-                  labels: {
-                      enabled: false
-                  },
-                  title: {
-                      text: null
-                  },
-                  startOnTick: false,
-                  endOnTick: false,
-                  tickPositions: []
-              },
-              yAxis: {
-                  endOnTick: false,
-                  startOnTick: false,
-                  labels: {
-                      enabled: false
-                  },
-                  title: {
-                      text: null
-                  },
-                  tickPositions: [0]
-              },
-              legend: {
-                  enabled: false
-              },
-              tooltip: {
-                  hideDelay: 0,
-                  outside: true,
-                  shared: true
-              },
-              plotOptions: {
-                  series: {
-                      animation: false,
-                      lineWidth: 1,
-                      shadow: false,
-                      states: {
-                          hover: {
-                              lineWidth: 1
-                          }
-                      },
-                      marker: {
-                          radius: 1,
-                          states: {
-                              hover: {
-                                  radius: 2
-                              }
-                          }
-                      },
-                      fillOpacity: 0.25
-                  },
-                  column: {
-                      negativeColor: '#910000',
-                      borderColor: 'silver'
-                  }
               }
-          };
+          }
+      },
+      series: [{
+          name: '',
+      },]
+    });
 
-      options = Highcharts.merge(defaultOptions, options);
+      objects_host_RAM_list[b]=Highcharts.chart({
+      chart: {
+          backgroundColor: '#eee',
+          renderTo: String('RAM_'+div_id),
+          borderWidth: 0,
+          type: 'area',
+          height: 70,
+          margin: [0, 0, 0, 0],
+          style: {
+            overflow: 'visible'
+          },
 
-      return hasRenderToArg ?
-          new Highcharts.Chart(a, options, c) :
-          new Highcharts.Chart(options, b);
+      },
+      legend: {
+        enabled: false,
+      },
+      title: {
+          text: ''
+      },
+      subtitle: {
+          text: ''
+      },
+      exporting: {
+        enabled: false
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        title: {
+            enabled: false
+        },
+        labels: {
+            enabled: false
+        },
+        tickLength: 0,
+        startOnTick: false,
+        endOnTick: false,
+        tickPositions: []
+      },
+      yAxis: {
+        title: {
+            enabled: false
+        },
+        labels: {
+            enabled: false
+        },
+        tickLength: 0,
+        gridLineWidth: 0,
+        endOnTick: false,
+        startOnTick: false,
+        tickPositions: [0],
+        min: 0,
+        max: 110,
+      },
+      tooltip: {
+        hideDelay: 0,
+        outside: true,
+        shared: true
+      },
+      plotOptions: {
+          area: {
+              pointStart: 1940,
+              marker: {
+                  enabled: false
+              }
+          }
+      },
+      series: [{
+          name: '',
+      },]
+    });
+
+      objects_host_DISK_list[b]=Highcharts.chart({
+      chart: {
+          backgroundColor: '#eee',
+          renderTo:('DISK_'+div_id),
+          borderWidth: 0,
+          type: 'area',
+          height: 70,
+          margin: [0, 0, 0, 0],
+          style: {
+            overflow: 'visible'
+          },
+
+      },
+      legend: {
+        enabled: false,
+      },
+      title: {
+          text: ''
+      },
+      subtitle: {
+          text: ''
+      },
+      exporting: {
+        enabled: false
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        title: {
+            enabled: false
+        },
+        labels: {
+            enabled: false
+        },
+        tickLength: 0,
+        startOnTick: false,
+        endOnTick: false,
+        tickPositions: []
+      },
+      yAxis: {
+        title: {
+            enabled: false
+        },
+        labels: {
+            enabled: false
+        },
+        tickLength: 0,
+        gridLineWidth: 0,
+        endOnTick: false,
+        startOnTick: false,
+        tickPositions: [0],
+        min: 0,
+        max: 110,
+      },
+      tooltip: {
+        hideDelay: 0,
+        outside: true,
+        shared: true
+      },
+      plotOptions: {
+          area: {
+              pointStart: 1940,
+              marker: {
+                  enabled: false
+              }
+          }
+      },
+      series: [{
+          name: '',
+      },]
+    });
+    }
+
   };
 
-  var start = +new Date(),
-      $tds = $('td[data-sparkline]'),
-      fullLen = $tds.length,
-      n = 0;
-
-  // Creating 153 sparkline charts is quite fast in modern browsers, but IE8 and mobile
-  // can take some seconds, so we split the input into chunks and apply them in timeouts
-  // in order avoid locking up the browser process and allow interaction.
-  function doChunk() {
-      var time = +new Date(),
-          i,
-          len = $tds.length,
-          $td,
-          stringdata,
-          arr,
-          data,
-          chart;
-
-      for (i = 0; i < len; i += 1) {
-          $td = $($tds[i]);
-          stringdata = $td.data('sparkline');
-          arr = stringdata.split('; ');
-          data = $.map(arr[0].split(', '), parseFloat);
-          chart = {};
-
-          if (arr[1]) {
-              chart.type = arr[1];
-          }
-          $td.highcharts('SparkLine', {
-              series: [{
-                  data: data,
-                  pointStart: 1
-              }],
-              tooltip: {
-                  headerFormat: '<span style="font-size: 10px">' + $td.parent().find('th').html() + ', Q{point.x}:</span><br/>',
-                  pointFormat: '<b>{point.y}.000</b> USD'
-              },
-              chart: chart
-          });
-
-          n += 1;
-
-          // If the process takes too much time, run a timeout to allow interaction with the browser
-          if (new Date() - time > 500) {
-              $tds.splice(0, i + 1);
-              setTimeout(doChunk, 0);
-              break;
-          }
-          // Print a feedback on the performance
-      }
-  }
-  doChunk();
+  //console.log("CRIEI a objects_host_CPU_list");
+  //console.log(objects_host_CPU_list);
 };

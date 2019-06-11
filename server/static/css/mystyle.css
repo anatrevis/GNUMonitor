@@ -68,48 +68,20 @@
 }
 
 
-/* VM Cards Charts: */
-
-#table-sparkline {
-    margin: 0;
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    text-align: center !important;
-    padding: 3px;
-    border-bottom: 1px solid silver;
-    height: 10px;
-    font-weight: normal !important;
-    border-collapse: collapse;
-    font-size: small;
-}
-
-td {
-    /* padding: 10px; */
-    /* border-bottom: 1px solid silver; */
-    height: 65px;
-    font-weight: normal !important;
-    border-collapse: collapse;
-    font-size: 9px;
-}
-
-
-.label-sparkline{
-  -webkit-transform: rotate(270deg);
-  font-size: 9px;
-  color: #6b757d;
-  padding:0px !important;
-}
-
-
 
 .side_bar_card_title{
   font-size: 12px;
   margin: 0;
   margin-left: 5px;
+  color: #6b757d;
 
+}
+
+.side_bar_card__chart_title{
+  font-size: 12px;
+  text-align: center;
+  margin: 0;
+  margin-top: 2px;
 }
 
 .col{

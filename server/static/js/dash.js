@@ -3,14 +3,15 @@ var data_list = [];
 var id_last_item = 0;
 var id_last_error = 0;
 //Post_Hosts() variables
-var objects_host_list= [];
+var objects_host_list = [];
 var id_last_host = 0;
 var list_hosts_pk= [];
 var list_hosts_name = [];
 var list_hosts_ip = [];
 //Selected_Charts() variables
 var id_last_chart = 0;
-var id_selected_host =0;
+var id_selected_host = 0;
+var pos_id_selected = 0;
 var list_charts_pk = [];
 var list_charts_title = [];
 var list_charts_xAxis_name = [];
@@ -19,11 +20,13 @@ var selected_ids= [];
 //Get_Hosts_Data() variables
 var id_last_host_data = 0;
 
+
 //var pk_selected_host = $( ".selected").attr('id');
 //console.log("PK SELECTED HOST:"+ pk_selected_host);
 
 function Post_Hosts(){ // Gets host informations, creates side bar cards for VM's connected
-  // console.log("Hosts!");
+  //console.log("Hosts!");
+
   $.ajax({
       url: "/gnumonitor/hosts",
       type: 'GET',
@@ -31,7 +34,7 @@ function Post_Hosts(){ // Gets host informations, creates side bar cards for VM'
       data: {id_last_host: id_last_host},
       success: function(hosts) {
       objects_host_list = hosts;
-      // console.log('HOSTS:'+hosts);
+      //console.log('HOSTS:'+hosts);
 
       if (objects_host_list.length > 0){
         id_last_host = objects_host_list[(objects_host_list.length) - 1]['id'];
@@ -43,15 +46,29 @@ function Post_Hosts(){ // Gets host informations, creates side bar cards for VM'
           list_hosts_ip.push(objects_host_list[x]['ip']);
 
           // $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id='row_"+list_hosts_pk[x]+"'><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div></div>");
-          $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id="+list_hosts_pk[x]+"><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div><div class='col-xs'id="+list_hosts_pk[x]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[x]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[x]+"><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+list_hosts_pk[x]+">CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id="+list_hosts_pk[x]+">RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id="+list_hosts_pk[x]+" >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div></div>");
-
+          // RIGHT $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id="+list_hosts_pk[x]+"><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div><div class='col-xs'id="+list_hosts_pk[x]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[x]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[x]+"><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+list_hosts_pk[x]+">CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id="+list_hosts_pk[x]+">RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id="+list_hosts_pk[x]+" >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div></div>");
+          $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id="+list_hosts_pk[x]+"><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div><div class='col-xs'id="+list_hosts_pk[x]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[x]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[x]+"> <div class='col' style='margin:1px;' id="+list_hosts_pk[x]+"><p class='side_bar_card__chart_title'>CPU</p></div><div class='col' style='margin:1px;' id="+list_hosts_pk[x]+"><p class='side_bar_card__chart_title'>RAM</p></div><div class='col' style='margin:1px;' id="+list_hosts_pk[x]+"><p class='side_bar_card__chart_title'>DISK</p></div></div><div class='row' id="+list_hosts_pk[x]+"><div class='col' style='margin:1px;' id='CPU_"+list_hosts_pk[x]+"'></div><div class='col' style='margin:1px;' id='RAM_"+list_hosts_pk[x]+"'></div><div class='col' style='margin:1px;' id='DISK_"+list_hosts_pk[x]+"'></div></div>");
+          // <table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+list_hosts_pk[x]+">CPU</td><td> <div id='td_"+list_hosts_pk[x]+"'></div></td><td class='label-sparkline' id="+list_hosts_pk[x]+">RAM</td><td/><td class='label-sparkline'id="+list_hosts_pk[x]+" >DISK</td><td ></tr></tbody></table></div></div>"
+          //
         }
 
         $("."+list_hosts_pk[0]+"").addClass("card_selected");//Fist VM start selected
         id_selected_host = list_hosts_pk[0];
+        pos_id_selected = 0;
         // console.log(id_selected_host);
 
-        Host_Reports();
+
+        if(list_hosts_pk.length>0){
+          console.log("CHAMEI PRA PLOTAR" +list_hosts_pk);
+          Host_Reports();
+          Host_Monitor_Chart();
+
+
+        }
+
+
+        console.log(objects_host_CPU_list);
+        //console.log('selecionei o primeiro chart');
 
       }
   },
@@ -61,7 +78,8 @@ function Post_Hosts(){ // Gets host informations, creates side bar cards for VM'
   });
 };
 
-function Get_Hosts_Data(){ // Gets host informations, creates side bar cards for VM's connected
+
+function Get_Hosts_Data(pos_id_selected){ // Gets host informations, creates side bar cards for VM's connected
   $.ajax({
       url: "/gnumonitor/hosts_data",
       type: 'GET',
@@ -70,29 +88,112 @@ function Get_Hosts_Data(){ // Gets host informations, creates side bar cards for
       success: function(hosts_data) {
 
         hosts_data_list = hosts_data;
+        //console.log(hosts_data_list);
+        //console.log(objects_host_CPU_list);
 
         if (hosts_data_list.length > 0){
            id_last_host_data = hosts_data_list[(hosts_data_list.length) - 1]['id'];
-           if(objects_host_list.length>0){
-             // for(d=0; d<objects_host_list.length; d++){
-             //   $("#row_"+hosts_data_list[d]['host_object_id']).append("<div class='col-xs'id="+hosts_data_list[d]['host_object_id']+"><p class='side_bar_card_last_time' id="+hosts_data[d]['host_object_id']+">"+hosts_data[d]['time']+"</p></div></div><div class='row' id="+hosts_data[d]['host_object_id']+"><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+hosts_data[d]['host_object_id']+">CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id="+hosts_data[d]['host_object_id']+">RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id="+hosts_data[d]['host_object_id']+" >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div>")
-             // }
-           }
 
-           Host_Monitor_Chart();//Plots monitoring charts for VM's (CPU, RAM, DISK)
+           //console.log("CHARTS: "+objects_host_CPU_list);
+
+           for(j=0; j<objects_host_CPU_list.length; j++){
+             var host_chart_data = hosts_data_list.filter(function(s){
+               return s.host_object_id == list_hosts_pk[j];});
+               //console.log(host_chart_data);
+
+               var host_data_time = [];
+
+               for(g=0; g<host_chart_data.length; g++){
+                 host_data_time.push(host_chart_data[g]['time']);
+               }
+
+               var cpu_host_data= [];
+               for(g=0; g<host_chart_data.length; g++){
+                 cpu_host_data.push(host_chart_data[g]['cpu_percent']);
+               }
+               //console.log("CPU: "+cpu_host_data);
+
+               var memory_host_data= [];
+               for(h=0; h<host_chart_data.length; h++){
+                 memory_host_data.push(host_chart_data[h]['memory_percent']);
+               }
+               //console.log("RAM: "+memory_host_data);
+
+               var disk_host_data= [];
+               for(d=0; d<host_chart_data.length; d++){
+                 disk_host_data.push(host_chart_data[d]['disk_percent']);
+               }
+               //console.log("DISK: "+disk_host_data);
+
+
+              Plot_CPU_Hosts_Charts(cpu_host_data, host_data_time, objects_host_CPU_list[j]);
+              Plot_Memory_Hosts_Charts(memory_host_data, host_data_time, objects_host_RAM_list[j]);
+              Plot_Disk_Hosts_Charts(disk_host_data, host_data_time, objects_host_DISK_list[j]);
+
+              for(z=0; z< list_hosts_pk.length; z++){
+                objects_host_CPU_list[z].plotBackground.attr({
+                  fill: 'white'
+                });
+                objects_host_RAM_list[z].plotBackground.attr({
+                  fill: 'white'
+                });
+                objects_host_DISK_list[z].plotBackground.attr({
+                  fill: 'white'
+                });
+              }
+
+              objects_host_CPU_list[pos_id_selected].plotBackground.attr({
+                fill: '#eee'
+              });
+              objects_host_RAM_list[pos_id_selected].plotBackground.attr({
+                fill: '#eee'
+              });
+              objects_host_DISK_list[pos_id_selected].plotBackground.attr({
+                fill: '#eee'
+              });
+
+
+           }
 
         }
 
-
-  },
-  failure: function(data) {
-      alert('Error in Post_Hosts');
-  }
+      },
+      failure: function(data) {
+        alert('Error in Post_Hosts');
+      }
   });
 };
 
+function Plot_CPU_Hosts_Charts(cpu_data, time, chart){
+  for(var o=0; o<cpu_data.length; o++){
+    var y = cpu_data[o];
+    var x = time [o];
+    var shift = chart.series[0].data.length >= 20;
+    chart.series[0].addPoint([x,y], true, shift);
+  }
+}
+
+function Plot_Memory_Hosts_Charts(memory_data, time, chart){
+  for(var o=0; o<memory_data.length; o++){
+    var y = memory_data[o];
+    var x = time [o];
+    var shift = chart.series[0].data.length >= 20;
+    chart.series[0].addPoint([x,y], true, shift);
+  }
+}
+
+function Plot_Disk_Hosts_Charts(disk_data, time, chart){
+  for(var o=0; o<disk_data.length; o++){
+    var y = disk_data[o];
+    var x = time [o];
+    var shift = chart.series[0].data.length >= 20;
+    chart.series[0].addPoint([x,y], true, shift);
+  }
+}
+
 function Post_Charts(){ // Gets the registered charts informations
-  // console.log("Charts!");
+  //console.log("Charts!");
+  //console.log(id_selected_host);
   $.ajax({
       url: "/gnumonitor/charts",
       type: 'GET',
@@ -100,7 +201,7 @@ function Post_Charts(){ // Gets the registered charts informations
       data: {id_selected_host: id_selected_host},
       success: function(charts) {
 
-      // console.log('enviei este id: '+id_selected_host);
+      //console.log('enviei este id: '+id_selected_host);
 
       selected_objects_chart_list = charts;
       // console.log(selected_objects_chart_list);
@@ -118,11 +219,13 @@ function Post_Charts(){ // Gets the registered charts informations
 
           // console.log('Chart div ID:' + list_charts_pk[u])
           //Create Monitoring_Divs
+
           $("#body_index").prepend("<div class='monitoring_div' ><button type='button' class='btn btn-secondary' id='delete_chart_"+list_charts_pk[u]+"' onclick='Destroy_Chart();'>Delete</button><button type='button' class='btn btn-secondary' id='clear_chart_"+list_charts_pk[u]+"' onclick='Clear_Chart();'>Clean</button> <div class= 'monitoring_chart'  id='chart_"+list_charts_pk[u]+"'  style='width:100%; height:400px;' > </div></div>");
 
           Monitor_Chart();
-
         }
+
+
 
       }
       Charts_Reports();
@@ -133,6 +236,8 @@ function Post_Charts(){ // Gets the registered charts informations
   }
 });
 };
+
+
 
 function Get_Chart_Data(){ //Gets GNU Radio monitoring data
   // console.log("Charts Data!");
@@ -228,10 +333,10 @@ function Host_Reports() {
       data: {id_selected_host: id_selected_host},
       success: function(hosts_notes) {
         // REMOVER TODAS DIV
-        console.log('ENTROU');
-        console.log(id_selected_host);
+        //console.log('ENTROU');
+        //console.log(id_selected_host);
         $("#host_errors_div").remove();
-        console.log('NOTES:'+hosts_notes);
+        //console.log('NOTES:'+hosts_notes);
 
         if (hosts_notes.length > 0){
           if(!$("#host_errors_div").length){
@@ -305,6 +410,8 @@ function Sys_Reports() {
       }
     });
 };
+
+
 
 function Destroy_Chart() {
   var btn = (event.target);
@@ -382,9 +489,36 @@ function Select_Card(){
       // console.log("deixa todos os cards brancos");
       $("."+list_hosts_pk[z]+"").removeClass("card_selected");
       $(".monitoring_div").remove();
+      if (list_hosts_pk[z] == clicked.id){
+        pos_id_selected = z
+        console.log("pk: "+pos_id_selected);
+      }
+
+      objects_host_CPU_list[z].plotBackground.attr({
+        fill: 'white'
+      });
+      objects_host_RAM_list[z].plotBackground.attr({
+        fill: 'white'
+      });
+      objects_host_DISK_list[z].plotBackground.attr({
+        fill: 'white'
+      });
+
+      Get_Hosts_Data(pos_id_selected);
     }
   // console.log("deixa o card clicado cinza");
   $("."+clicked.id+"").addClass("card_selected");
+
+  objects_host_CPU_list[pos_id_selected].plotBackground.attr({
+    fill: '#eee'
+  });
+  objects_host_RAM_list[pos_id_selected].plotBackground.attr({
+    fill: '#eee'
+  });
+  objects_host_DISK_list[pos_id_selected].plotBackground.attr({
+    fill: '#eee'
+  });
+
   id_selected_host= clicked.id;
   id_last_chart=0;
   id_last_item = 0;
@@ -394,6 +528,7 @@ function Select_Card(){
   list_charts_yAxis_name = [];
   objects_chart_list = [];
   console.log("MUDOU O ID NO CLICK!!"+id_selected_host);
+  console.log(objects_host_CPU_list);
   Host_Reports();
   }
 
@@ -402,9 +537,15 @@ function Select_Card(){
 $(document).ready(function(){
   setInterval(function (){
     Post_Hosts();
-    Post_Charts();
-    Get_Chart_Data();
-    Get_Hosts_Data();
+    console.log(id_selected_host);
+    console.log("HOSTS PK:"+list_hosts_pk);
+    if (list_hosts_pk.length>0){
+      Post_Charts();
+      Get_Chart_Data();
+      console.log("pos id selected:" +pos_id_selected);
+      Get_Hosts_Data(pos_id_selected);
+    }
+
     Sys_Reports();
 
   }, 1000);

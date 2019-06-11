@@ -36,6 +36,7 @@ class RestFunctions(object):
         if request.method == "GET":
             id_selected_host = request.GET["id_selected_host"]
             charts = []
+            print(id_selected_host)
             if int(id_selected_host) > 0:
                 hostObject = Host.objects.get(pk=id_selected_host)
                 charts = list(Chart.objects.filter(host_object=hostObject).order_by('pk').values())
