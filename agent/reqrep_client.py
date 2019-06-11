@@ -136,6 +136,30 @@ def request_new_chart_list():
             requestedChartList = requestedDecodedJson["charts_to_monitor_list"]
             print(requestedChartList)
 
+def request_new_chart_list_and_send_host_data(cpuPercent, memoryPercent, diskPercent):
+    global requestedChartList, zmqSocket, hostName, hostIp
+    timeNow = str(datetime.now())
+    requestToSendJson = json.dumps({
+        'host_name':hostName,
+        'host_ip':hostIp,
+        'host_time':timeNow,
+        'cpu_percent':cpuPercent,
+        'memory_percent':memoryPercent,
+        'disk_percent':diskPercent,
+        'request_type':'data_to_monitor'
+        })
+    #print (requestToSendJson)
+    zmqSocket.send_json(requestToSendJson)
+    recivedJson = zmqSocket.recv_json()
+    #print(recivedJson)
+    requestedDecodedJson = json.loads(recivedJson)
+    if "charts_to_monitor_list" in requestedDecodedJson:
+        if requestedDecodedJson['host_ip'] == hostIp and requestedDecodedJson['host_name'] == hostName:
+            requestedChartList = requestedDecodedJson["charts_to_monitor_list"]
+            print(requestedChartList)
+
+
+
 
 def send_chart_and_host_data_to_server(valuesList, idChartList, cpuPercent, memoryPercent, diskPercent):
     global hostName, hostIp, zmqSocket
@@ -207,8 +231,21 @@ def main():
     while True:
 
         if not requestedChartList:
-            ### REQUEST COMMANDS TO MONITOR ###
-            request_new_chart_list()
+            try:
+                ### COLECT HOST DATA ###
+                cpuPercent = psutil.cpu_percent()
+                memoryPercent = psutil.virtual_memory()[2]
+                diskPercent = psutil.disk_usage('/')[3]
+            except:
+                ### REPORT ERROR TO SERVER ###
+                host_report_to_server('Warning', 'The agent are unable to provide monitored host data')
+
+            if cpuPercent and memoryPercent and diskPercent:
+                request_new_chart_list_and_send_host_data(cpuPercent, memoryPercent, diskPercent)
+            else:
+                ### JUST REQUEST COMMANDS TO MONITOR ###
+                request_new_chart_list()
+
             time.sleep (retryConnectionInterval)
         else:
             try:
