@@ -239,11 +239,15 @@ def main():
             except:
                 ### REPORT ERROR TO SERVER ###
                 host_report_to_server('Warning', 'The agent are unable to provide monitored host data')
+                cpuPercent = None
 
-            if cpuPercent and memoryPercent and diskPercent:
+            #print(cpuPercent, memoryPercent,diskPercent)
+            if cpuPercent is not None and memoryPercent is not None and diskPercent is not None:
+                print("Sending data")
                 request_new_chart_list_and_send_host_data(cpuPercent, memoryPercent, diskPercent)
             else:
                 ### JUST REQUEST COMMANDS TO MONITOR ###
+                print("Just request")
                 request_new_chart_list()
 
             time.sleep (retryConnectionInterval)
@@ -256,6 +260,7 @@ def main():
             except:
                 ### REPORT ERROR TO SERVER ###
                 host_report_to_server('Warning', 'The agent are unable to provide monitored host data')
+                cpuPercent = None
 
             ### COLLECT GNURADIO DATA ###
             valuesList, idChartList = [], []
@@ -281,14 +286,14 @@ def main():
                 idChartList.append(monitorChart["chart_id"])
             #end-for
             if len(valuesList) > 0 :
-                if cpuPercent and memoryPercent and diskPercent:
+                if cpuPercent is not None and memoryPercent is not None and diskPercent is not None: 
                     #IF I HAVE CHART AND HOST DATA
                     send_chart_and_host_data_to_server(valuesList, idChartList, cpuPercent, memoryPercent, diskPercent)
                 else:
                     #IF I HAVE JUST CHART DATA
                     send_chart_data_to_server(valuesList, idChartList)
             else:
-                if cpuPercent and memoryPercent and diskPercent:
+                if cpuPercent is not None and memoryPercent is not None and diskPercent is not None:
                     #IF I HAVE JUST HOST DATA
                     send_host_data_to_server(cpuPercent, memoryPercent, diskPercent)
 
