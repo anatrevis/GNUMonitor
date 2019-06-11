@@ -26,7 +26,6 @@ var id_last_host_data = 0;
 
 function Post_Hosts(){ // Gets host informations, creates side bar cards for VM's connected
   //console.log("Hosts!");
-
   $.ajax({
       url: "/gnumonitor/hosts",
       type: 'GET',
@@ -34,27 +33,29 @@ function Post_Hosts(){ // Gets host informations, creates side bar cards for VM'
       data: {id_last_host: id_last_host},
       success: function(hosts) {
       objects_host_list = hosts;
-      //console.log('HOSTS:'+hosts);
+      console.log('HOSTS:'+hosts);
+      //console.log('NEW HOST ID:'+objects_host_list[0]['id']);
 
       if (objects_host_list.length > 0){
         id_last_host = objects_host_list[(objects_host_list.length) - 1]['id'];
-        // console.log(id_last_host);
+        console.log("LAST HOST :" +id_last_host);
 
+        var pos = 0;
         for (x=0; x<objects_host_list.length;x++){ //Create lists with hosts parameters
           list_hosts_pk.push(objects_host_list[x]['id']);
           list_hosts_name.push(objects_host_list[x]['name']);
           list_hosts_ip.push(objects_host_list[x]['ip']);
-
+          pos = list_hosts_pk.length - 1;
           // $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id='row_"+list_hosts_pk[x]+"'><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div></div>");
           // RIGHT $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id="+list_hosts_pk[x]+"><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div><div class='col-xs'id="+list_hosts_pk[x]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[x]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[x]+"><table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+list_hosts_pk[x]+">CPU</td><td data-sparkline='71, 78, 39, 66 '/><td class='label-sparkline' id="+list_hosts_pk[x]+">RAM</td><td data-sparkline='68, 52, 80, 96 '/><td class='label-sparkline'id="+list_hosts_pk[x]+" >DISK</td><td data-sparkline='3, 26, -41, -30'></tr></tbody></table></div></div>");
-          $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[x]+" sidecard' id="+list_hosts_pk[x]+"><div class='row' id="+list_hosts_pk[x]+"><div class='col' id="+list_hosts_pk[x]+"><p class='side_bar_card_title' id="+list_hosts_pk[x]+">"+list_hosts_name[x]+" ("+list_hosts_ip[x]+")</p></div><div class='col-xs'id="+list_hosts_pk[x]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[x]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[x]+"> <div class='col' style='margin:1px;' id="+list_hosts_pk[x]+"><p class='side_bar_card__chart_title'>CPU</p></div><div class='col' style='margin:1px;' id="+list_hosts_pk[x]+"><p class='side_bar_card__chart_title'>RAM</p></div><div class='col' style='margin:1px;' id="+list_hosts_pk[x]+"><p class='side_bar_card__chart_title'>DISK</p></div></div><div class='row' id="+list_hosts_pk[x]+"><div class='col' style='margin:1px;' id='CPU_"+list_hosts_pk[x]+"'></div><div class='col' style='margin:1px;' id='RAM_"+list_hosts_pk[x]+"'></div><div class='col' style='margin:1px;' id='DISK_"+list_hosts_pk[x]+"'></div></div>");
+          $(".side_bar_cards_wrap").prepend("<div class='side_bar_card "+list_hosts_pk[pos]+" sidecard' id="+list_hosts_pk[pos]+"><div class='row' id="+list_hosts_pk[pos]+"><div class='col' id="+list_hosts_pk[pos]+"><p class='side_bar_card_title' id="+list_hosts_pk[pos]+">"+list_hosts_name[pos]+" ("+list_hosts_ip[pos]+")</p></div><div class='col-xs'id="+list_hosts_pk[pos]+"><p class='side_bar_card_last_time' id="+list_hosts_pk[pos]+">16:32</p></div></div><div class='row' id="+list_hosts_pk[pos]+"> <div class='col' style='margin:1px;' id="+list_hosts_pk[pos]+"><p class='side_bar_card__chart_title'>CPU</p></div><div class='col' style='margin:1px;' id="+list_hosts_pk[pos]+"><p class='side_bar_card__chart_title'>RAM</p></div><div class='col' style='margin:1px;' id="+list_hosts_pk[pos]+"><p class='side_bar_card__chart_title'>DISK</p></div></div><div class='row' id="+list_hosts_pk[pos]+"><div class='col' style='margin:1px;' id='CPU_"+list_hosts_pk[pos]+"'></div><div class='col' style='margin:1px;' id='RAM_"+list_hosts_pk[pos]+"'></div><div class='col' style='margin:1px;' id='DISK_"+list_hosts_pk[pos]+"'></div></div>");
           // <table id='table-sparkline'><tbody id='tbody-sparkline'><tr><td class='label-sparkline' id="+list_hosts_pk[x]+">CPU</td><td> <div id='td_"+list_hosts_pk[x]+"'></div></td><td class='label-sparkline' id="+list_hosts_pk[x]+">RAM</td><td/><td class='label-sparkline'id="+list_hosts_pk[x]+" >DISK</td><td ></tr></tbody></table></div></div>"
           //
         }
 
-        $("."+list_hosts_pk[0]+"").addClass("card_selected");//Fist VM start selected
-        id_selected_host = list_hosts_pk[0];
-        pos_id_selected = 0;
+        $("."+list_hosts_pk[pos]+"").addClass("card_selected");//Fist VM start selected
+        id_selected_host = list_hosts_pk[pos];
+        pos_id_selected = pos;
         // console.log(id_selected_host);
 
 
@@ -537,6 +538,7 @@ function Select_Card(){
 $(document).ready(function(){
   setInterval(function (){
     Post_Hosts();
+    Host_Reports();
     console.log(id_selected_host);
     console.log("HOSTS PK:"+list_hosts_pk);
     if (list_hosts_pk.length>0){

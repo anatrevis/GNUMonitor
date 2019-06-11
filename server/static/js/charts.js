@@ -70,7 +70,7 @@ function Monitor_Chart(){
 
 function Host_Monitor_Chart(){
 
-  console.log("PLOTADO");
+  console.log("PLOTADO" +list_hosts_pk);
   if (list_hosts_pk.length > 0){
     for (var b=0; b<list_hosts_pk.length; b++) {
       var div_id = list_hosts_pk[b];

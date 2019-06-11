@@ -19,7 +19,9 @@ class RestFunctions(object):
         global hostObject
         if request.method == "GET":
             id_last_host = request.GET["id_last_host"]
+            print(id_last_host)
             hosts = list(Host.objects.filter(id__gt=id_last_host).order_by('pk').values())
+            print(hosts)
             if id_last_host == 0 and hosts:
                 id_selected_host = hosts[0].pk
                 hostObject = Host.objects.get(pk=id_selected_host)
@@ -36,7 +38,6 @@ class RestFunctions(object):
         if request.method == "GET":
             id_selected_host = request.GET["id_selected_host"]
             charts = []
-            print(id_selected_host)
             if int(id_selected_host) > 0:
                 hostObject = Host.objects.get(pk=id_selected_host)
                 charts = list(Chart.objects.filter(host_object=hostObject).order_by('pk').values())
