@@ -201,6 +201,7 @@ def process_agent_request(zmqSocket, hostObject, decodedJson):
     if 'request_type' in decodedJson:
         rawRequestType = decodedJson['request_type']
         if rawRequestType == "data_to_monitor":
+            save_host_data(hostObject, decodedJson)
             replay_data_to_monitor(zmqSocket, hostObject, decodedJson)
         elif rawRequestType == "new_data":
             save_host_data(hostObject, decodedJson)
